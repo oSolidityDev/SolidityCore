@@ -1,0 +1,50 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      changelog:
+        description: "Release notes / changelog"
+        required: true
+        type: string
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Get project version from pom.xml
+        id: project_version
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Create Git tag
+        run: |
+          git tag v${{ steps.project_version.outputs.version }}
+          git push origin v${{ steps.project_version.outputs.version }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.project_version.outputs.version }}
+          name: v${{ steps.project_version.outputs.version }}
+          body: ${{ github.event.inputs.changelog }}
+          files: |
+            target/soliditycore-${{ steps.project_version.outputs.version }}.jar
