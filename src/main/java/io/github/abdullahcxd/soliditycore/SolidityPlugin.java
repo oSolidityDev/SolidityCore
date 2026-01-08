@@ -1,5 +1,6 @@
 package io.github.abdullahcxd.soliditycore;
 
+import io.github.abdullahcxd.soliditycore.actionbar.ActionBarManager;
 import io.github.abdullahcxd.soliditycore.commands.BaseCommand;
 import io.github.abdullahcxd.soliditycore.editor.SolidityEditor;
 import io.github.abdullahcxd.soliditycore.exception.DeprecationException;
@@ -8,6 +9,7 @@ import io.github.abdullahcxd.soliditycore.listener.SolidityListener;
 import io.github.abdullahcxd.soliditycore.utils.SenderUtils;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +26,7 @@ public abstract class SolidityPlugin extends JavaPlugin {
      */
     public void reloadConfigurations() {
         reloadConfig();
+        SolidityEditor.getInstance().reloadAttachedConfiguration(this.getSolidityPluginName());
     }
 
     @Override
@@ -34,6 +37,8 @@ public abstract class SolidityPlugin extends JavaPlugin {
                 getSolidityMetadata().getPluginName(),
                 getSolidityMetadata().getPluginLoggerPrefix()
         );
+
+        ActionBarManager.initialize(this);
 
         ConsoleCommandSender console = getConsoleCommandSender();
         SenderUtils.sendWithPrefix(console, getSolidityPluginName(), SenderUtils.separator(32));
@@ -120,5 +125,9 @@ public abstract class SolidityPlugin extends JavaPlugin {
 
     public String getSolidityPluginName() {
         return getSolidityMetadata().getPluginName();
+    }
+
+    public ConfigurationSection getAttachedConfiguration() {
+        return SolidityEditor.getInstance().getAttachedConfigurationFor(this.getSolidityPluginName());
     }
 }

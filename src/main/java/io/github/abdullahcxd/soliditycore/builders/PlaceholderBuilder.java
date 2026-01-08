@@ -16,6 +16,7 @@ import java.util.*;
  *   <li>Static placeholders via {@link #addPlaceholder(String, String)}</li>
  *   <li>Dynamic resolution via {@link Resolver}</li>
  *   <li>Multiple occurrences (all are replaced)</li>
+ *   <li>Nested keys like {@code {soliditycore.prefix.plugin}}</li>
  * </ul>
  *
  * <p>
@@ -98,6 +99,17 @@ public final class PlaceholderBuilder {
     }
 
     /**
+     * Adds multiple static placeholders from a map.
+     *
+     * @param placeholders map of key-value pairs
+     * @return this builder instance
+     */
+    public PlaceholderBuilder addPlaceholders(@NotNull Map<String, String> placeholders) {
+        this.placeholders.putAll(placeholders);
+        return this;
+    }
+
+    /**
      * Builds the final string, resolving placeholders.
      *
      * <p>
@@ -149,5 +161,50 @@ public final class PlaceholderBuilder {
         }
 
         return result.toString();
+    }
+
+    /**
+     * Builds the final string using only static placeholders.
+     *
+     * @return resolved string
+     */
+    public @NotNull String build() {
+        return build(null);
+    }
+
+    /**
+     * Checks if the template contains any placeholders.
+     *
+     * @return true if placeholders exist
+     */
+    public boolean hasPlaceholders() {
+        return template.contains("{") && template.contains("}");
+    }
+
+    /**
+     * Extracts all placeholder keys from the template.
+     *
+     * @return set of placeholder keys (without braces)
+     */
+    public @NotNull Set<String> extractPlaceholderKeys() {
+        Set<String> keys = new HashSet<>();
+        int i = 0;
+
+        while (i < template.length()) {
+            char c = template.charAt(i);
+
+            if (c == '{') {
+                int end = template.indexOf('}', i + 1);
+                if (end != -1) {
+                    String key = template.substring(i + 1, end);
+                    keys.add(key);
+                    i = end + 1;
+                    continue;
+                }
+            }
+            i++;
+        }
+
+        return keys;
     }
 }

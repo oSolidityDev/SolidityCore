@@ -35,9 +35,6 @@ plugins:
   # you can access different values from around the SolidityCore config
   # file to use as a value here.
   #
-  # Note: Currently this isn't implemented and won't work at the current
-  #       version v${project.version}
-  #
   attachedConfigurations:
     ExamplePlugin:
       exampleKey: true
@@ -56,6 +53,9 @@ soliditycore: {}
 # It allows getting accessed by placeholders like:
 # - {soliditycustom.something}
 #
+# Note: That this section must be string-string, meaning key must be a string
+#       value must be a string or a number!
+#
 # Feel free to add anything here according to the plugins you use.
 #
-custom_fields:
+custom_fields: {}

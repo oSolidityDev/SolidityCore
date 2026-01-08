@@ -1,5 +1,6 @@
 package io.github.abdullahcxd.soliditycore;
 
+import io.github.abdullahcxd.soliditycore.actionbar.ActionBarManager;
 import io.github.abdullahcxd.soliditycore.commands.CommandManager;
 import io.github.abdullahcxd.soliditycore.commands.base.SolidityCoreCommand;
 import io.github.abdullahcxd.soliditycore.editor.SolidityEditor;
@@ -17,6 +18,7 @@ public final class SolidityCore extends JavaPlugin {
         saveDefaultConfig();
         SolidityEditor.getInstance().setCore(this);
         SolidityEditor.getInstance().initialize();
+
         ConsoleCommandSender console = getConsoleCommandSender();
 
         SenderUtils.sendPrefixed(console, SenderUtils.separator(32));

@@ -1,6 +1,7 @@
 package io.github.abdullahcxd.soliditycore.utils;
 
 import io.github.abdullahcxd.soliditycore.exception.SolidityException;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -85,7 +86,7 @@ public class Validator {
             throw new SolidityException(errorMessage);
     }
 
-    public static void instanceOf(Object obj, Class<?> type, String errorMessage) {
+    public static void instanceOf(Object obj, @NotNull Class<?> type, String errorMessage) {
         notNull(obj, errorMessage);
         if (!type.isInstance(obj))
             throw new SolidityException(errorMessage);
