@@ -1,0 +1,74 @@
+name: Bug report
+description: Report a bug or unexpected behavior in SolidityCore
+title: "[Bug]: "
+labels:
+  - bug
+assignees: []
+
+body:
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: "When running /example, the plugin throws an exception..."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Start the server
+        2. Run /example
+        3. Observe the error
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+      placeholder: "The command should execute without errors."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Actual behavior
+      description: What actually happened.
+      placeholder: "The server throws a NullPointerException."
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: SolidityCore version
+      placeholder: "e.g. 0.0.4"
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Minecraft version
+      placeholder: "e.g. 1.21.1"
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Server software
+      placeholder: "Paper / Purpur / Spigot"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Server logs / stack trace
+      description: Paste relevant logs or errors here.
+      render: shell
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Any other information that might help.
