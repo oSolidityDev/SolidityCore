@@ -3,6 +3,8 @@ package io.github.abdullahcxd.soliditycore.editor;
 import io.github.abdullahcxd.soliditycore.SolidityCore;
 import io.github.abdullahcxd.soliditycore.SolidityMetadata;
 import io.github.abdullahcxd.soliditycore.SolidityPlugin;
+import io.github.abdullahcxd.soliditycore.prefix.PrefixManager;
+import io.github.abdullahcxd.soliditycore.utils.SenderUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +21,7 @@ public class SolidityEditor {
     private final List<SolidityMetadata> metadata;
     @Setter
     private SolidityCore core;
+    private PrefixManager prefixManager;
 
     private SolidityEditor() {
         this.metadata = new ArrayList<>();
@@ -75,6 +78,21 @@ public class SolidityEditor {
         return reloaded;
     }
 
+    public void initialize() {
+        prefixManager = new PrefixManager(SenderUtils.SOLIDITY_PREFIX);
+
+        prefixManager.register("solidity", SenderUtils.SOLIDITY_PREFIX);
+        prefixManager.register("info", PrefixManager.Presets.info());
+        prefixManager.register("success", PrefixManager.Presets.success());
+        prefixManager.register("error", PrefixManager.Presets.error());
+        prefixManager.register("warning", PrefixManager.Presets.warning());
+        prefixManager.register("debug", PrefixManager.Presets.debug());
+        prefixManager.register("system", PrefixManager.Presets.system());
+    }
+
+    public void registerSenderPrefix(String keyId, String prefix) {
+        prefixManager.register(keyId, prefix);
+    }
 
     public boolean isPluginLoaded(@NotNull String name) {
         return getPlugin(name).isPresent();

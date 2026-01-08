@@ -1,6 +1,9 @@
 package io.github.abdullahcxd.soliditycore.utils;
 
 import io.github.abdullahcxd.soliditycore.builders.MessageBuilder;
+import io.github.abdullahcxd.soliditycore.editor.SolidityEditor;
+import io.github.abdullahcxd.soliditycore.prefix.PrefixManager;
+import io.github.abdullahcxd.soliditycore.prefix.PrefixManager.Prefix;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -16,20 +19,30 @@ import java.util.Collection;
 public final class SenderUtils {
 
     private static final MiniMessage MINI = MiniMessage.miniMessage();
+    private static PrefixManager prefixManager;
 
-    /** SolidityCore default prefix (MiniMessage format) */
-    private static final String SOLIDITY_PREFIX_MM =
-                    "<bold><gradient:#6A5ACD:#8A2BE2>Solidity</gradient>" +
-                    "<white>Core</white></bold>" +
-                    " <gray>»</gray> ";
+    public static final Prefix SOLIDITY_PREFIX = PrefixManager.Presets.solidity();
 
-    /** Pre-built prefix component */
-    private static final Component SOLIDITY_PREFIX =
-            MINI.deserialize(SOLIDITY_PREFIX_MM);
+    static {
+        prefixManager = SolidityEditor.getInstance().getPrefixManager();
+    }
 
     private SenderUtils() {}
 
-    /* ---------------- BASIC SEND ---------------- */
+    /**
+     * Gets the global PrefixManager instance
+     */
+    public static @NotNull PrefixManager getPrefixManager() {
+        return prefixManager;
+    }
+
+    /**
+     * Sets a custom PrefixManager
+     */
+    public static void setPrefixManager(@NotNull PrefixManager manager) {
+        prefixManager = manager;
+    }
+
 
     public static void send(@NotNull CommandSender sender,
                             @NotNull String miniMessage) {
@@ -48,23 +61,55 @@ public final class SenderUtils {
         }
     }
 
-    /* ---------------- PREFIXED ---------------- */
 
     public static void sendPrefixed(@NotNull CommandSender sender,
                                     @NotNull String miniMessage) {
-        sender.sendMessage(
-                SOLIDITY_PREFIX.append(MINI.deserialize(miniMessage))
-        );
+        sender.sendMessage(SOLIDITY_PREFIX.append(miniMessage));
     }
 
     public static void sendPrefixed(@NotNull CommandSender sender,
                                     @NotNull Component component) {
-        sender.sendMessage(
-                SOLIDITY_PREFIX.append(component)
-        );
+        sender.sendMessage(SOLIDITY_PREFIX.append(component));
     }
 
-    /* ---------------- BUILDER INTEGRATION ---------------- */
+
+    /**
+     * Sends a message with a registered prefix
+     *
+     * @param sender The recipient
+     * @param prefixKey The registered prefix key
+     * @param miniMessage The message in MiniMessage format
+     */
+    public static void sendWithPrefix(@NotNull CommandSender sender,
+                                      @NotNull String prefixKey,
+                                      @NotNull String miniMessage) {
+        Prefix prefix = prefixManager.get(prefixKey);
+        sender.sendMessage(prefix.append(miniMessage));
+    }
+
+    /**
+     * Sends a component with a registered prefix
+     */
+    public static void sendWithPrefix(@NotNull CommandSender sender,
+                                      @NotNull String prefixKey,
+                                      @NotNull Component component) {
+        Prefix prefix = prefixManager.get(prefixKey);
+        sender.sendMessage(prefix.append(component));
+    }
+
+
+    public static void sendPrefixed(@NotNull CommandSender sender,
+                                    @NotNull Prefix prefix,
+                                    @NotNull String miniMessage) {
+        sender.sendMessage(prefix.append(miniMessage));
+    }
+
+    public static void sendPrefixed(@NotNull CommandSender sender,
+                                    @NotNull Prefix prefix,
+                                    @NotNull Component component) {
+        sender.sendMessage(prefix.append(component));
+    }
+
 
     public static void send(@NotNull CommandSender sender,
                             @NotNull MessageBuilder builder) {
@@ -73,50 +118,107 @@ public final class SenderUtils {
 
     public static void sendPrefixed(@NotNull CommandSender sender,
                                     @NotNull MessageBuilder builder) {
-        sender.sendMessage(
-                SOLIDITY_PREFIX.append(builder.build())
-        );
+        sender.sendMessage(SOLIDITY_PREFIX.append(builder.build()));
     }
 
-    /* ---------------- COMMON TYPES ---------------- */
+    public static void sendWithPrefix(@NotNull CommandSender sender,
+                                      @NotNull String prefixKey,
+                                      @NotNull MessageBuilder builder) {
+        Prefix prefix = prefixManager.get(prefixKey);
+        sender.sendMessage(prefix.append(builder.build()));
+    }
+
+    public static void sendPrefixed(@NotNull CommandSender sender,
+                                    @NotNull Prefix prefix,
+                                    @NotNull MessageBuilder builder) {
+        sender.sendMessage(prefix.append(builder.build()));
+    }
+
 
     public static void success(@NotNull CommandSender sender,
                                @NotNull String message) {
-        sendPrefixed(sender,
-                "<green>✔</green> <gray>" + message + "</gray>"
-        );
+        sendWithPrefix(sender, "success", message);
     }
 
     public static void error(@NotNull CommandSender sender,
                              @NotNull String message) {
-        sendPrefixed(sender,
-                "<red>✖</red> <gray>" + message + "</gray>"
-        );
+        sendWithPrefix(sender, "error", message);
     }
 
     public static void warning(@NotNull CommandSender sender,
                                @NotNull String message) {
-        sendPrefixed(sender,
-                "<yellow>⚠</yellow> <gray>" + message + "</gray>"
-        );
+        sendWithPrefix(sender, "warning", message);
     }
 
-    /* ---------------- CONSOLE ---------------- */
+    public static void info(@NotNull CommandSender sender,
+                            @NotNull String message) {
+        sendWithPrefix(sender, "info", message);
+    }
+
+    public static void debug(@NotNull CommandSender sender,
+                             @NotNull String message) {
+        sendWithPrefix(sender, "debug", message);
+    }
+
 
     public static void console(@NotNull String miniMessage) {
         Bukkit.getConsoleSender().sendMessage(MINI.deserialize(miniMessage));
     }
 
     public static void consolePrefixed(@NotNull String miniMessage) {
-        Bukkit.getConsoleSender().sendMessage(
-                SOLIDITY_PREFIX.append(MINI.deserialize(miniMessage))
-        );
+        Bukkit.getConsoleSender().sendMessage(SOLIDITY_PREFIX.append(miniMessage));
     }
 
-    /* ---------------- UTIL ---------------- */
+    public static void consoleWithPrefix(@NotNull String prefixKey,
+                                         @NotNull String miniMessage) {
+        Prefix prefix = prefixManager.get(prefixKey);
+        Bukkit.getConsoleSender().sendMessage(prefix.append(miniMessage));
+    }
+
+    public static void consolePrefixed(@NotNull Prefix prefix,
+                                       @NotNull String miniMessage) {
+        Bukkit.getConsoleSender().sendMessage(prefix.append(miniMessage));
+    }
+
+
+    /**
+     * Sends the same message to multiple recipients
+     */
+    public static void broadcast(@NotNull Collection<? extends CommandSender> senders,
+                                 @NotNull String miniMessage) {
+        Component message = MINI.deserialize(miniMessage);
+        for (CommandSender sender : senders) {
+            sender.sendMessage(message);
+        }
+    }
+
+    /**
+     * Broadcasts with a prefix
+     */
+    public static void broadcastPrefixed(@NotNull Collection<? extends CommandSender> senders,
+                                         @NotNull String miniMessage) {
+        Component message = SOLIDITY_PREFIX.append(miniMessage);
+        for (CommandSender sender : senders) {
+            sender.sendMessage(message);
+        }
+    }
+
+    /**
+     * Broadcasts with a registered prefix key
+     */
+    public static void broadcastWithPrefix(@NotNull Collection<? extends CommandSender> senders,
+                                           @NotNull String prefixKey,
+                                           @NotNull String miniMessage) {
+        Prefix prefix = prefixManager.get(prefixKey);
+        Component message = prefix.append(miniMessage);
+        for (CommandSender sender : senders) {
+            sender.sendMessage(message);
+        }
+    }
+
 
     public static void newline(@NotNull CommandSender sender) {
-        sendPrefixed(sender, "");
+        sender.sendMessage(Component.empty());
     }
 
     @Contract(pure = true)
@@ -124,5 +226,28 @@ public final class SenderUtils {
         return MINI.deserialize(
                 "<dark_gray><strikethrough>" + " ".repeat(length) + "</strikethrough>"
         );
+    }
+
+    /**
+     * Creates a title-style header with separators
+     */
+    public static void sendHeader(@NotNull CommandSender sender,
+                                  @NotNull String title,
+                                  int separatorLength) {
+        sender.sendMessage(separator(separatorLength));
+        sendPrefixed(sender, title);
+        sender.sendMessage(separator(separatorLength));
+    }
+
+    /**
+     * Creates a header with custom prefix
+     */
+    public static void sendHeader(@NotNull CommandSender sender,
+                                  @NotNull String prefixKey,
+                                  @NotNull String title,
+                                  int separatorLength) {
+        sender.sendMessage(separator(separatorLength));
+        sendWithPrefix(sender, prefixKey, title);
+        sender.sendMessage(separator(separatorLength));
     }
 }

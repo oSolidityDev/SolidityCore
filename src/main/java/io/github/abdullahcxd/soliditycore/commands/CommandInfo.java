@@ -35,6 +35,9 @@ public class CommandInfo {
     private String name;
     private String description;
     private String permission;
+    private String usage;
+    @Builder.Default
+    private List<String> aliases = new ArrayList<>();
     private boolean player;
     @Builder.Default
     private List<CommandArgument> arguments = new ArrayList<>();

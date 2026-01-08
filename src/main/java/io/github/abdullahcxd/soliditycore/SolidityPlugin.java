@@ -2,6 +2,7 @@ package io.github.abdullahcxd.soliditycore;
 
 import io.github.abdullahcxd.soliditycore.commands.BaseCommand;
 import io.github.abdullahcxd.soliditycore.editor.SolidityEditor;
+import io.github.abdullahcxd.soliditycore.exception.DeprecationException;
 import io.github.abdullahcxd.soliditycore.exception.SolidityException;
 import io.github.abdullahcxd.soliditycore.listener.SolidityListener;
 import io.github.abdullahcxd.soliditycore.utils.SenderUtils;
@@ -29,17 +30,23 @@ public abstract class SolidityPlugin extends JavaPlugin {
     public void onLoad() {
         SolidityEditor.getInstance().registerPluginMeta(this);
 
+        SolidityEditor.getInstance().registerSenderPrefix(
+                getSolidityMetadata().getPluginName(),
+                getSolidityMetadata().getPluginLoggerPrefix()
+        );
+
         ConsoleCommandSender console = getConsoleCommandSender();
-        SenderUtils.sendPrefixed(console, SenderUtils.separator(32));
+        SenderUtils.sendWithPrefix(console, getSolidityPluginName(), SenderUtils.separator(32));
         SenderUtils.newline(console);
-        SenderUtils.sendPrefixed(console,
+        SenderUtils.sendWithPrefix(console,
+                getSolidityPluginName(),
                 "<green>Loading Solidity Plugin <gold>" +
                         getSolidityMetadata().getPluginName() +
                         "</gold> version <gold>" +
                         getSolidityMetadata().getPluginVersion() +
                         "</gold></green>");
         SenderUtils.newline(console);
-        SenderUtils.sendPrefixed(console, SenderUtils.separator(32));
+        SenderUtils.sendWithPrefix(console, getSolidityPluginName(), SenderUtils.separator(32));
 
         load();
     }
@@ -59,13 +66,13 @@ public abstract class SolidityPlugin extends JavaPlugin {
     }
 
     private void logEnable() {
-        SenderUtils.sendPrefixed(getConsoleCommandSender(),
+        SenderUtils.sendWithPrefix(getConsoleCommandSender(), getSolidityPluginName(),
                 "<green>Enabled plugin <gold>" +
                         getSolidityMetadata().getPluginName() + "</gold></green>");
     }
 
     private void logDisable() {
-        SenderUtils.sendPrefixed(getConsoleCommandSender(),
+        SenderUtils.sendWithPrefix(getConsoleCommandSender(), getSolidityPluginName(),
                 "<red>Disabled plugin <gold>" +
                         getSolidityMetadata().getPluginName() + "</gold></red>");
     }
@@ -90,27 +97,28 @@ public abstract class SolidityPlugin extends JavaPlugin {
         return allLoaded;
     }
 
+    /**
+     * Register's a command to the server
+     * @deprecated in favor of CommandManager#registerCommand, to simplify duplications and to add more features
+     * @param command Command to be registered
+     */
+    @Deprecated(forRemoval = true, since = "0.0.3")
     public void registerCommand(BaseCommand command) {
 
-        if (command == null) {
-            throw new SolidityException("Cannot resolve a null command from plugin " + getSolidityMetadata().getPluginName());
-        }
-
-        command.initialize();
-
-        PluginCommand pluginCommand = getCommand(command.getCommandInfo().getName());
-
-        if (pluginCommand == null) {
-            throw new SolidityException("Command with the name of /" + command.getCommandInfo().getName() + " wasn't found in the plugin.yml for " + getDescription().getName());
-        }
-
-        pluginCommand.setExecutor(command);
-        pluginCommand.setTabCompleter(command);
+        throw new DeprecationException(
+                "registerCommand",
+                DeprecationException.DeprecatedType.Method,
+                "The method was removed in favor of CommandManager#registerCommand"
+        );
 
     }
 
     public void registerListener(@NotNull SolidityListener listener) {
         listener.initialize(this);
         getServer().getPluginManager().registerEvents(listener, this);
+    }
+
+    public String getSolidityPluginName() {
+        return getSolidityMetadata().getPluginName();
     }
 }
