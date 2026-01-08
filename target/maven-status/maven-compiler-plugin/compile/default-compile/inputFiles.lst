@@ -18,6 +18,14 @@ D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\da
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\database\DatabaseManager.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\database\DatabaseType.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\database\Schema.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\discord\Author.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\discord\DiscordWebhook.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\discord\Field.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\discord\Footer.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\discord\Image.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\discord\Thumbnail.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\discord\WebhookEmbed.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\discord\WebhookPayload.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\editor\SolidityEditor.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\exception\SolidityException.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\listener\SolidityListener.java
@@ -36,5 +44,7 @@ D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\ta
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\utils\ChainedList.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\utils\ListUtils.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\utils\LocationUtils.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\utils\Resolvable.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\utils\SenderUtils.java
 D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\utils\TimeUtil.java
+D:\IdeaProjects\SolidityCore\src\main\java\io\github\abdullahcxd\soliditycore\utils\Validator.java
