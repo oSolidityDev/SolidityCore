@@ -1,1 +1,61 @@
-################################################
+############################################################################
+#
+# SolidityCore v${project.version} by AbdullahCXD and oSolidity Team
+#
+#   This is the main configuration file for SolidityCore, mainly used to
+#   configure most plugins through this or blacklisting plugins, etc.
+#
+#   Warning: Read every comment carefully about each key so you know
+#            what it does!
+#
+############################################################################
+
+#
+# Configuration version, do not change this as this is used by the plugin
+#
+config-version: 1
+
+#
+# Plugins Configuration, this sections configures plugins whether to
+# Enable or disable plugins, edit this configuration, disable reloading, etc
+#
+# Configuration for this plugin is found under this section
+#
+plugins:
+
+  #
+  # Plugins to be blacklisted, provide the name of the plugin and SolidityCore
+  # will not load it
+  #
+  blacklisted:
+    - ExamplePlugin
+
+  #
+  # This is attached configurations, unlike normal configuration files
+  # you can access different values from around the SolidityCore config
+  # file to use as a value here.
+  #
+  # Note: Currently this isn't implemented and won't work at the current
+  #       version v${project.version}
+  #
+  attachedConfigurations:
+    ExamplePlugin:
+      exampleKey: true
+      prefix: "{soliditycore.prefix.customplugin} >>" # Using CustomPlugin (an example plugin) prefix here
+
+#
+# The main configuration of soliditycore
+# This contains config to edit the core plugin instead of editing sub plugins
+#
+# Currently empty, leave as-is
+#
+soliditycore: {}
+
+#
+# These are custom fields that can be used in attached configurations
+# It allows getting accessed by placeholders like:
+# - {soliditycustom.something}
+#
+# Feel free to add anything here according to the plugins you use.
+#
+custom_fields:

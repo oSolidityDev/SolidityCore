@@ -1,14 +1,12 @@
 package io.github.abdullahcxd.soliditycore;
 
-import io.github.abdullahcxd.soliditycore.commands.BaseCommand;
 import io.github.abdullahcxd.soliditycore.commands.CommandManager;
 import io.github.abdullahcxd.soliditycore.commands.base.SolidityCoreCommand;
 import io.github.abdullahcxd.soliditycore.editor.SolidityEditor;
-import io.github.abdullahcxd.soliditycore.exception.SolidityException;
 import io.github.abdullahcxd.soliditycore.utils.SenderUtils;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -16,6 +14,7 @@ public final class SolidityCore extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        saveDefaultConfig();
         SolidityEditor.getInstance().setCore(this);
         SolidityEditor.getInstance().initialize();
         ConsoleCommandSender console = getConsoleCommandSender();
@@ -54,7 +53,7 @@ public final class SolidityCore extends JavaPlugin {
         SenderUtils.sendPrefixed(console, "<red>Shutting down SolidityCore...</red>");
     }
 
-    public ConsoleCommandSender getConsoleCommandSender() {
+    public @NotNull ConsoleCommandSender getConsoleCommandSender() {
         return getServer().getConsoleSender();
     }
 
@@ -62,9 +61,10 @@ public final class SolidityCore extends JavaPlugin {
      * Fetches all registered SolidityPlugins
      * This requires that all plugins extending SolidityPlugin register themselves in SolidityEditor
      */
-    private SolidityPlugin[] getRegisteredPlugins() {
+    private SolidityPlugin @NotNull [] getRegisteredPlugins() {
         return SolidityEditor.getInstance()
                 .getMetadata()
+                .values()
                 .stream()
                 .map(meta -> (SolidityPlugin) getServer().getPluginManager().getPlugin(meta.getPluginName()))
                 .filter(Objects::nonNull)
