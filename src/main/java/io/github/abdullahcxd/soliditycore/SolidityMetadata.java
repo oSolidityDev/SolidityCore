@@ -13,7 +13,7 @@ public class SolidityMetadata {
     private final String pluginName;
     private final String pluginVersion;
     @Builder.Default
-    private String pluginLoggerPrefix = "<blue>" + getPluginName() + "</blue>";
+    private String pluginLoggerPrefix = "<blue>SolidityPlugin</blue>";
 
     @Builder.Default
     private final List<String> authors = ChainedList.startChain("YourName");
