@@ -1,73 +1,339 @@
-
 package io.github.abdullahcxd.soliditycore.storage;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
+/**
+ * Centralized manager for player-specific temporary storage.
+ * Thread-safe and optimized for concurrent access.
+ */
 public class StorageManager {
 
-    private static final Map<UUID, PlayerTemporaryStorage> playerStorages = new ConcurrentHashMap<>();
+    private static final Map<UUID, PlayerStorage> PLAYER_STORAGES = new ConcurrentHashMap<>();
 
     /**
-     * Get or create a player's temporary storage
+     * Gets or creates a player's storage.
+     *
+     * @param player the player
+     * @return the player's storage
      */
-    public static PlayerTemporaryStorage getOrCreate(Player player) {
+    public static @NotNull PlayerStorage getOrCreate(@NotNull Player player) {
         return getOrCreate(player.getUniqueId());
     }
 
     /**
-     * Get or create storage by UUID
+     * Gets or creates storage by UUID.
+     *
+     * @param playerId the player UUID
+     * @return the player's storage
      */
-    public static PlayerTemporaryStorage getOrCreate(UUID playerId) {
-        return playerStorages.computeIfAbsent(playerId, PlayerTemporaryStorage::new);
+    public static @NotNull PlayerStorage getOrCreate(@NotNull UUID playerId) {
+        return PLAYER_STORAGES.computeIfAbsent(playerId, PlayerStorage::new);
     }
 
     /**
-     * Get existing storage (returns null if doesn't exist)
+     * Gets existing storage (returns null if doesn't exist).
+     *
+     * @param player the player
+     * @return the storage or null
      */
-    public static PlayerTemporaryStorage get(UUID playerId) {
-        return playerStorages.get(playerId);
+    public static @Nullable PlayerStorage get(@NotNull Player player) {
+        return get(player.getUniqueId());
     }
 
     /**
-     * Check if storage exists for player
+     * Gets existing storage by UUID.
+     *
+     * @param playerId the player UUID
+     * @return the storage or null
      */
-    public static boolean has(UUID playerId) {
-        return playerStorages.containsKey(playerId);
+    public static @Nullable PlayerStorage get(@NotNull UUID playerId) {
+        return PLAYER_STORAGES.get(playerId);
     }
 
     /**
-     * Remove player's storage
+     * Gets storage as Optional.
+     *
+     * @param player the player
+     * @return Optional containing storage if present
      */
-    public static void remove(UUID playerId) {
-        PlayerTemporaryStorage storage = playerStorages.remove(playerId);
+    public static @NotNull Optional<PlayerStorage> getOptional(@NotNull Player player) {
+        return Optional.ofNullable(get(player));
+    }
+
+    /**
+     * Gets storage as Optional by UUID.
+     *
+     * @param playerId the player UUID
+     * @return Optional containing storage if present
+     */
+    public static @NotNull Optional<PlayerStorage> getOptional(@NotNull UUID playerId) {
+        return Optional.ofNullable(get(playerId));
+    }
+
+    /**
+     * Checks if storage exists for player.
+     *
+     * @param player the player
+     * @return true if storage exists
+     */
+    public static boolean has(@NotNull Player player) {
+        return has(player.getUniqueId());
+    }
+
+    /**
+     * Checks if storage exists for UUID.
+     *
+     * @param playerId the player UUID
+     * @return true if storage exists
+     */
+    public static boolean has(@NotNull UUID playerId) {
+        return PLAYER_STORAGES.containsKey(playerId);
+    }
+
+    /**
+     * Executes an action with the player's storage if it exists.
+     *
+     * @param player the player
+     * @param action the action to perform
+     */
+    public static void ifPresent(@NotNull Player player, @NotNull Consumer<PlayerStorage> action) {
+        ifPresent(player.getUniqueId(), action);
+    }
+
+    /**
+     * Executes an action with the storage if it exists.
+     *
+     * @param playerId the player UUID
+     * @param action   the action to perform
+     */
+    public static void ifPresent(@NotNull UUID playerId, @NotNull Consumer<PlayerStorage> action) {
+        PlayerStorage storage = PLAYER_STORAGES.get(playerId);
         if (storage != null) {
-            storage.clear();
+            action.accept(storage);
         }
     }
 
     /**
-     * Remove player's storage
+     * Removes player's storage and clears its data.
+     *
+     * @param player the player
+     * @return true if storage was removed
      */
-    public static void remove(Player player) {
-        remove(player.getUniqueId());
+    public static boolean remove(@NotNull Player player) {
+        return remove(player.getUniqueId());
     }
 
     /**
-     * Clear all storages
+     * Removes storage by UUID and clears its data.
+     *
+     * @param playerId the player UUID
+     * @return true if storage was removed
+     */
+    public static boolean remove(@NotNull UUID playerId) {
+        PlayerStorage storage = PLAYER_STORAGES.remove(playerId);
+        if (storage != null) {
+            storage.clear();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Clears all storages and removes them.
      */
     public static void clearAll() {
-        playerStorages.values().forEach(PlayerTemporaryStorage::clear);
-        playerStorages.clear();
+        PLAYER_STORAGES.values().forEach(PlayerStorage::clear);
+        PLAYER_STORAGES.clear();
     }
 
     /**
-     * Get the number of active storages
+     * Clears data in all storages without removing them.
+     */
+    public static void clearAllData() {
+        PLAYER_STORAGES.values().forEach(PlayerStorage::clear);
+    }
+
+    /**
+     * Gets the number of active storages.
+     *
+     * @return the count
      */
     public static int size() {
-        return playerStorages.size();
+        return PLAYER_STORAGES.size();
+    }
+
+    /**
+     * Checks if there are no active storages.
+     *
+     * @return true if empty
+     */
+    public static boolean isEmpty() {
+        return PLAYER_STORAGES.isEmpty();
+    }
+
+    /**
+     * Gets all player UUIDs with active storage.
+     *
+     * @return unmodifiable set of UUIDs
+     */
+    public static @NotNull Set<UUID> getActivePlayers() {
+        return Collections.unmodifiableSet(PLAYER_STORAGES.keySet());
+    }
+
+    /**
+     * Gets all active storages.
+     *
+     * @return unmodifiable collection of storages
+     */
+    public static @NotNull Collection<PlayerStorage> getAllStorages() {
+        return Collections.unmodifiableCollection(PLAYER_STORAGES.values());
+    }
+
+    /**
+     * Removes storages that are empty (have no data).
+     *
+     * @return number of storages removed
+     */
+    public static int cleanupEmpty() {
+        int removed = 0;
+        Iterator<Map.Entry<UUID, PlayerStorage>> iterator = PLAYER_STORAGES.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, PlayerStorage> entry = iterator.next();
+            if (entry.getValue().isEmpty()) {
+                iterator.remove();
+                removed++;
+            }
+        }
+
+        return removed;
+    }
+
+    /**
+     * Quick set - gets or creates storage and sets a value.
+     *
+     * @param player the player
+     * @param key    the key
+     * @param value  the value
+     */
+    public static void set(@NotNull Player player, @NotNull String key, @NotNull Object value) {
+        getOrCreate(player).set(key, value);
+    }
+
+    /**
+     * Quick set by UUID.
+     *
+     * @param playerId the player UUID
+     * @param key      the key
+     * @param value    the value
+     */
+    public static void set(@NotNull UUID playerId, @NotNull String key, @NotNull Object value) {
+        getOrCreate(playerId).set(key, value);
+    }
+
+    /**
+     * Quick get - returns null if storage or key doesn't exist.
+     *
+     * @param player the player
+     * @param key    the key
+     * @return the value or null
+     */
+    public static @Nullable Object getValue(@NotNull Player player, @NotNull String key) {
+        PlayerStorage storage = get(player);
+        return storage != null ? storage.get(key) : null;
+    }
+
+    /**
+     * Quick get by UUID.
+     *
+     * @param playerId the player UUID
+     * @param key      the key
+     * @return the value or null
+     */
+    public static @Nullable Object getValue(@NotNull UUID playerId, @NotNull String key) {
+        PlayerStorage storage = get(playerId);
+        return storage != null ? storage.get(key) : null;
+    }
+
+    /**
+     * Quick typed get.
+     *
+     * @param player the player
+     * @param key    the key
+     * @param type   the expected type
+     * @param <T>    the type parameter
+     * @return the value or null
+     */
+    public static <T> @Nullable T getTyped(@NotNull Player player, @NotNull String key, @NotNull Class<T> type) {
+        PlayerStorage storage = get(player);
+        return storage != null ? storage.getTyped(key, type) : null;
+    }
+
+    /**
+     * Quick typed get by UUID.
+     *
+     * @param playerId the player UUID
+     * @param key      the key
+     * @param type     the expected type
+     * @param <T>      the type parameter
+     * @return the value or null
+     */
+    public static <T> @Nullable T getTyped(@NotNull UUID playerId, @NotNull String key, @NotNull Class<T> type) {
+        PlayerStorage storage = get(playerId);
+        return storage != null ? storage.getTyped(key, type) : null;
+    }
+
+    /**
+     * Quick remove.
+     *
+     * @param player the player
+     * @param key    the key
+     * @return the removed value or null
+     */
+    public static @Nullable Object removeValue(@NotNull Player player, @NotNull String key) {
+        PlayerStorage storage = get(player);
+        return storage != null ? storage.remove(key) : null;
+    }
+
+    /**
+     * Quick remove by UUID.
+     *
+     * @param playerId the player UUID
+     * @param key      the key
+     * @return the removed value or null
+     */
+    public static @Nullable Object removeValue(@NotNull UUID playerId, @NotNull String key) {
+        PlayerStorage storage = get(playerId);
+        return storage != null ? storage.remove(key) : null;
+    }
+
+    /**
+     * Quick has checked.
+     *
+     * @param player the player
+     * @param key    the key
+     * @return true if the key exists in the player's storage
+     */
+    public static boolean hasValue(@NotNull Player player, @NotNull String key) {
+        PlayerStorage storage = get(player);
+        return storage != null && storage.has(key);
+    }
+
+    /**
+     * Quick has check by UUID.
+     *
+     * @param playerId the player UUID
+     * @param key      the key
+     * @return true if the key exists in the storage
+     */
+    public static boolean hasValue(@NotNull UUID playerId, @NotNull String key) {
+        PlayerStorage storage = get(playerId);
+        return storage != null && storage.has(key);
     }
 }

@@ -10,8 +10,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.List;
-
 public class SolidityCoreMenu extends InventoryScreen {
 
     private static final String title = "<gradient:#6A5ACD:#8A2BE2>SolidityCore Menu</gradient>";

@@ -1,7 +1,7 @@
 package io.github.abdullahcxd.soliditycore.screen;
 
 import io.github.abdullahcxd.soliditycore.editor.SolidityEditor;
-import io.github.abdullahcxd.soliditycore.storage.PlayerTemporaryStorage;
+import io.github.abdullahcxd.soliditycore.storage.PlayerStorage;
 import io.github.abdullahcxd.soliditycore.storage.StorageManager;
 import io.github.abdullahcxd.soliditycore.builders.MessageBuilder;
 import lombok.Getter;
@@ -32,7 +32,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
     private final String title;
     private final int rows;
     private final Map<Integer, ClickableItem> itemMap = new HashMap<>();
-    private final Map<UUID, PlayerTemporaryStorage> viewerStorages = new HashMap<>();
+    private final Map<UUID, PlayerStorage> viewerStorages = new HashMap<>();
 
     private boolean registered = false;
 
@@ -157,7 +157,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
             registered = true;
         }
 
-        PlayerTemporaryStorage storage = StorageManager.getOrCreate(player);
+        PlayerStorage storage = StorageManager.getOrCreate(player);
         viewerStorages.put(player.getUniqueId(), storage);
 
         player.openInventory(inventory);
@@ -188,7 +188,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
     /**
      * Get storage for a specific viewer
      */
-    public PlayerTemporaryStorage getStorage(Player player) {
+    public PlayerStorage getStorage(@NotNull Player player) {
         return viewerStorages.get(player.getUniqueId());
     }
 
