@@ -27,6 +27,38 @@ Features the library includes:
 
 For this library, it'll only work on 1.21+ for now.
 
+| Version | Discontinued | MC Version |
+|---------|-----------|-----------|
+| 0.0.x   | ❌          | 1.21.x    |
+
+## Development
+
+Here is the repository and dependency of the library, for more information follow the wiki instead:
+
+```xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+```
+
+```xml
+<dependency>
+    <groupId>com.github.oSolidityDev</groupId>
+    <artifactId>SolidityCore</artifactId>
+    <version>{VERSION}</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+Make sure to include SolidityCore as a dependency in your `plugin.yml`:
+```yml
+depend:
+  - SolidityCore
+```
+
 ## License and Development
 
 Developed by OSolidity Team, licensed under the MIT license.
+
+Please include credits for using this project.
