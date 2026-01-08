@@ -18,7 +18,9 @@ Features the library includes:
  - Screen: InventoryManager, InventoryScreen, PaginatedInventoryScreen
  - Storage (For Screens): Storage, StorageManager, PlayerTemporaryStorage
  - Task: TaskChain
- - Utility: ChainedList, ListUtils, LocationUtils, SenderUtils, TimeUtil
+ - Discord: WebhookPayload, WebhookEmbed, Thumbnail, Image, Footer, Field, DiscordWebhook, Author
+ - Prefix: PrefixManager
+ - Utility: ChainedList, ListUtils, LocationUtils, SenderUtils, TimeParser, Validator
  - Main: SolidityMetadata, SolidityPlugin
 
 ## Version Compatibility
