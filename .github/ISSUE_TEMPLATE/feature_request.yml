@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a new feature or improvement for SolidityCore
+title: "[Feature]: "
+labels:
+  - enhancement
+assignees: []
+
+body:
+  - type: textarea
+    attributes:
+      label: Problem description
+      description: Is your feature request related to a problem?
+      placeholder: "I'm unable to easily..."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Proposed solution
+      description: Describe the solution you'd like to see.
+      placeholder: "Add a system that allows..."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Alternatives considered
+      description: Describe any alternative solutions you've considered.
+      placeholder: "I tried using..."
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Use cases
+      description: How would this feature be used in practice?
+      placeholder: "This would be useful when..."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Any extra information, screenshots, or references.
