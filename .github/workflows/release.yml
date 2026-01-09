@@ -2,11 +2,6 @@ name: Build & Release
 
 on:
   workflow_dispatch:
-    inputs:
-      changelog:
-        description: "Release notes / changelog"
-        required: true
-        type: string
 
 jobs:
   build-release:
@@ -18,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all tags
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -32,6 +29,31 @@ jobs:
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Generate changelog from commits
+        id: changelog
+        run: |
+          # Get the latest tag (previous release)
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          # Generate changelog
+          if [ -z "$LATEST_TAG" ]; then
+            # No previous tags, get all commit messages
+            CHANGELOG=$(git log --pretty=format:"- %s" --no-merges)
+          else
+            # Get commits since the last tag
+            CHANGELOG=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s" --no-merges)
+          fi
+          
+          # Handle empty changelog
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No changes since last release"
+          fi
+          
+          # Save to output (handle multiline)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Build with Maven
         run: mvn clean package
 
@@ -45,6 +67,6 @@ jobs:
         with:
           tag_name: v${{ steps.project_version.outputs.version }}
           name: v${{ steps.project_version.outputs.version }}
-          body: ${{ github.event.inputs.changelog }}
+          body: ${{ steps.changelog.outputs.changelog }}
           files: |
             target/soliditycore-${{ steps.project_version.outputs.version }}.jar
