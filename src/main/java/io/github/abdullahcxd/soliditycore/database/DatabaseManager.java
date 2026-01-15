@@ -100,6 +100,15 @@ public class DatabaseManager {
             hikariConfig.setPassword(config.getPassword());
         }
 
+        // Set driver class explicitly if needed
+        switch (config.getType()) {
+            case MYSQL -> hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
+            case MARIADB -> hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");
+            case POSTGRESQL -> hikariConfig.setDriverClassName("org.postgresql.Driver");
+            case SQLITE -> hikariConfig.setDriverClassName("org.sqlite.JDBC");
+            case H2 -> hikariConfig.setDriverClassName("org.h2.Driver");
+        }
+
         // Pool configuration
         hikariConfig.setMaximumPoolSize(config.getMaxPoolSize());
         hikariConfig.setMinimumIdle(config.getMinIdleConnections());
@@ -152,6 +161,11 @@ public class DatabaseManager {
                 hikariConfig.addDataSourceProperty("cacheServerConfiguration", "true");
                 hikariConfig.addDataSourceProperty("elideSetAutoCommits", "true");
                 hikariConfig.addDataSourceProperty("maintainTimeStats", "false");
+
+                if (config.getType() == DatabaseType.MARIADB) {
+                    hikariConfig.addDataSourceProperty("allowMultiQueries", "true"); // improves batch inserts
+                    hikariConfig.addDataSourceProperty("useSSL", String.valueOf(config.isUseSSL()));
+                }
             }
             case POSTGRESQL -> {
                 hikariConfig.addDataSourceProperty("prepareThreshold", "3");
@@ -162,6 +176,13 @@ public class DatabaseManager {
                 hikariConfig.addDataSourceProperty("journal_mode", "WAL");
                 hikariConfig.addDataSourceProperty("synchronous", "NORMAL");
                 hikariConfig.addDataSourceProperty("cache_size", "10000");
+            }
+            case H2 -> {
+                hikariConfig.addDataSourceProperty("CACHE_SIZE", "65536");   // default is small, increase for large datasets
+                hikariConfig.addDataSourceProperty("LOCK_MODE", "3");       // table-level locking for concurrency
+                hikariConfig.addDataSourceProperty("AUTO_SERVER", "TRUE");  // allow multiple processes to access same file DB
+                hikariConfig.addDataSourceProperty("MV_STORE", "TRUE");     // use modern MVCC storage engine
+                hikariConfig.addDataSourceProperty("MVCC", "TRUE");         // enable multi-version concurrency
             }
         }
     }

@@ -4,6 +4,7 @@ import io.github.abdullahcxd.soliditycore.database.DatabaseType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -180,21 +181,72 @@ public class TableBuilder {
         return sql.toString();
     }
 
-    /**
-     * Builds all SQL statements including table creation and indexes.
-     */
-    public @NotNull List<String> buildAll(@NotNull DatabaseType dbType) {
+    public @NotNull List<String> buildAll(@NotNull DatabaseType dbType, @NotNull java.sql.Connection conn) {
         List<String> statements = new ArrayList<>();
 
         // Main table creation
         statements.add(build(dbType));
 
-        // Index creation (separate statements for better compatibility)
+        // Index creation (safely)
         for (Index index : indexes) {
-            statements.add(index.toCreateStatement(tableName, dbType));
+            if (!indexExists(conn, dbType, tableName, index.name)) {
+                statements.add(index.toCreateStatement(tableName, dbType));
+            }
         }
 
         return statements;
+    }
+
+    /**
+     * Checks if an index exists in a cross-database manner.
+     */
+    @SneakyThrows
+    private boolean indexExists(@NotNull java.sql.Connection conn,
+                                @NotNull DatabaseType dbType,
+                                @NotNull String tableName,
+                                @NotNull String indexName) {
+        switch (dbType) {
+            case MYSQL, MARIADB -> {
+                try (var rs = conn.getMetaData().getIndexInfo(conn.getCatalog(), null, tableName, false, false)) {
+                    while (rs.next()) {
+                        String existingIndex = rs.getString("INDEX_NAME");
+                        if (indexName.equalsIgnoreCase(existingIndex)) return true;
+                    }
+                }
+                return false;
+            }
+            case POSTGRESQL -> {
+                String sql = "SELECT indexname FROM pg_indexes WHERE tablename = ? AND indexname = ?";
+                try (var ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, tableName.toLowerCase());
+                    ps.setString(2, indexName.toLowerCase());
+                    try (var rs = ps.executeQuery()) {
+                        return rs.next();
+                    }
+                }
+            }
+            case SQLITE -> {
+                String sql = "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name=? AND name=?";
+                try (var ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, tableName);
+                    ps.setString(2, indexName);
+                    try (var rs = ps.executeQuery()) {
+                        return rs.next();
+                    }
+                }
+            }
+            case H2 -> {
+                String sql = "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE TABLE_NAME = ? AND INDEX_NAME = ?";
+                try (var ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, tableName.toUpperCase());
+                    ps.setString(2, indexName.toUpperCase());
+                    try (var rs = ps.executeQuery()) {
+                        return rs.next();
+                    }
+                }
+            }
+            default -> throw new IllegalStateException("Unsupported DB type: " + dbType);
+        }
     }
 
     private void appendDatabaseSpecificOptions(@NotNull StringBuilder sql, @NotNull DatabaseType dbType) {

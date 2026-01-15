@@ -5,6 +5,7 @@ api-version: '1.21'
 description: The library plugin for OSolidity plugins
 
 libraries:
+  # Connection pool
   - com.zaxxer:HikariCP:7.0.2
 
 commands:

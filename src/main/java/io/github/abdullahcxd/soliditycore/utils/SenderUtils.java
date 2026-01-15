@@ -23,7 +23,7 @@ public final class SenderUtils {
 
     public static final Prefix SOLIDITY_PREFIX = PrefixManager.Presets.solidity();
 
-    static {
+    public static void initialize() {
         prefixManager = SolidityEditor.getInstance().getPrefixManager();
     }
 

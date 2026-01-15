@@ -119,7 +119,7 @@ public abstract class AbstractSchema implements Schema {
              Statement stmt = conn.createStatement()) {
 
             for (TableBuilder table : tables) {
-                List<String> statements = table.buildAll(dbType);
+                List<String> statements = table.buildAll(dbType, conn);
 
                 for (String sql : statements) {
                     stmt.executeUpdate(sql);

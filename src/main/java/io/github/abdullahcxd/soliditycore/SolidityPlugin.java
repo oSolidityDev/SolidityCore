@@ -38,8 +38,6 @@ public abstract class SolidityPlugin extends JavaPlugin {
                 getSolidityMetadata().getPluginLoggerPrefix()
         );
 
-        ActionBarManager.initialize(this);
-
         ConsoleCommandSender console = getConsoleCommandSender();
         SenderUtils.sendWithPrefix(console, getSolidityPluginName(), SenderUtils.separator(32));
         SenderUtils.newline(console);
@@ -59,6 +57,7 @@ public abstract class SolidityPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         super.onEnable();
+        ActionBarManager.initialize(this);
         logEnable();
         enable();
     }
