@@ -4,8 +4,6 @@ import io.github.abdullahcxd.soliditycore.commands.CommandManager;
 import io.github.abdullahcxd.soliditycore.commands.base.SolidityCoreCommand;
 import io.github.abdullahcxd.soliditycore.editor.SolidityEditor;
 import io.github.abdullahcxd.soliditycore.utils.SenderUtils;
-import net.byteflux.libby.BukkitLibraryManager;
-import net.byteflux.libby.Library;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -78,6 +76,7 @@ public final class SolidityCore extends JavaPlugin {
     }
 
     private void loadLibraries() {
+        /*
         BukkitLibraryManager libraryManager = new BukkitLibraryManager(this);
 
         libraryManager.addMavenCentral();
@@ -137,6 +136,6 @@ public final class SolidityCore extends JavaPlugin {
         libraryManager.loadLibrary(sqlite);
 
         libraryManager.addMavenCentral();
-
+        */
     }
 }

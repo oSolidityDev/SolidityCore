@@ -28,6 +28,7 @@ public class CommandManager {
      * @param command The command to register
      */
     public static void registerCommand(@NotNull SolidityPlugin solidityPlugin, @NotNull BaseCommand command) {
+        command.setSolidityPlugin(solidityPlugin);
         registerCommand((JavaPlugin) solidityPlugin, command);
     }
 

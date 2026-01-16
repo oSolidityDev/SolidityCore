@@ -1,8 +1,10 @@
 package io.github.abdullahcxd.soliditycore.commands;
 
+import io.github.abdullahcxd.soliditycore.SolidityPlugin;
 import io.github.abdullahcxd.soliditycore.builders.MessageBuilder;
 import io.github.abdullahcxd.soliditycore.utils.SenderUtils;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,9 +17,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Setter
 @Getter
 public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
+    private SolidityPlugin solidityPlugin;
     private BaseCommand parent;
 
     public BaseCommand() {
@@ -43,22 +47,18 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         return new ArrayList<>();
     }
 
-    public void setParent(BaseCommand parent) {
-        this.parent = parent;
-    }
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
 
         // Check if command is player-only
         if (getCommandInfo().isPlayer() && !(sender instanceof Player)) {
-            SenderUtils.sendPrefixed(sender, "<red>You cannot use this command from console!</red>");
+            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>You cannot use this command from console!</red>");
             return true;
         }
 
         // Check permissions
         if (getCommandInfo().getPermission() != null && !sender.hasPermission(getCommandInfo().getPermission())) {
-            SenderUtils.sendPrefixed(sender, "<red>You do not have permission to use this command.</red>");
+            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>You do not have permission to use this command.</red>");
             return true;
         }
 
@@ -73,7 +73,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
             BaseCommand subcommand = findSubcommand(subcommandName);
 
             if (subcommand == null) {
-                SenderUtils.sendPrefixed(sender, "<red>Unknown subcommand:</red> <gold>" + subcommandName + "</gold>");
+                SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>Unknown subcommand:</red> <gold>" + subcommandName + "</gold>");
                 renderHelpMessage(sender);
                 return true;
             }
@@ -89,20 +89,20 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
                 .count();
 
         if (args.length < requiredCount) {
-            SenderUtils.sendPrefixed(sender, "<red>Not enough arguments!</red>");
+            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>Not enough arguments!</red>");
             String fullCommand = buildFullCommandPath();
-            SenderUtils.sendPrefixed(sender, "<gold>Usage:</gold> /" + fullCommand + " " + buildArguments());
+            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<gold>Usage:</gold> /" + fullCommand + " " + buildArguments());
             SenderUtils.newline(sender);
-            SenderUtils.sendPrefixed(sender, "<red><> <gray>- Required, <green>[] <gray>- Optional</gray></red>");
+            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red><> <gray>- Required, <green>[] <gray>- Optional</gray></red>");
 
             // Show argument descriptions if available
             if (commandArgs.stream().anyMatch(a -> a.getDescription() != null)) {
                 SenderUtils.newline(sender);
-                SenderUtils.sendPrefixed(sender, "<yellow>Arguments:</yellow>");
+                SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<yellow>Arguments:</yellow>");
                 for (CommandInfo.CommandArgument arg : commandArgs) {
                     if (arg.getDescription() != null) {
                         String argDisplay = arg.isRequired() ? "<" + arg.getName() + ">" : "[" + arg.getName() + "]";
-                        SenderUtils.sendPrefixed(sender, "  <gold>" + argDisplay + "</gold> <gray>- " + arg.getDescription() + "</gray>");
+                        SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "  <gold>" + argDisplay + "</gold> <gray>- " + arg.getDescription() + "</gray>");
                     }
                 }
             }
@@ -118,7 +118,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
             execute(context);
         } catch (Exception e) {
-            SenderUtils.sendPrefixed(sender, "<red>An error occurred while executing this command.</red>");
+            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>An error occurred while executing this command.</red>");
             e.printStackTrace();
         }
 
@@ -142,9 +142,9 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         String fullCommand = buildFullCommandPath();
         String displayName = fullCommand.substring(0, 1).toUpperCase() + fullCommand.substring(1);
 
-        SenderUtils.sendPrefixed(sender, "<yellow><bold>" + displayName + " Commands:</bold></yellow>");
+        SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<yellow><bold>" + displayName + " Commands:</bold></yellow>");
         SenderUtils.newline(sender);
-        SenderUtils.sendPrefixed(sender, "<red><> <gray>- Required, <green>[] <gray>- Optional</gray></red>");
+        SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red><> <gray>- Required, <green>[] <gray>- Optional</gray></red>");
         SenderUtils.newline(sender);
 
         if (hasSubcommands()) {
@@ -187,7 +187,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         SenderUtils.newline(sender);
     }
 
-    private void compare(MessageBuilder builder, List<CommandInfo.CommandArgument> sortedArgs) {
+    private void compare(MessageBuilder builder, @NotNull List<CommandInfo.CommandArgument> sortedArgs) {
         sortedArgs.sort(Comparator.comparingInt(CommandInfo.CommandArgument::getPosition));
 
         for (CommandInfo.CommandArgument arg : sortedArgs) {

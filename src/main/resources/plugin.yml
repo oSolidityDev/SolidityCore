@@ -7,6 +7,17 @@ description: The library plugin for OSolidity plugins
 libraries:
   # Connection pool
   - com.zaxxer:HikariCP:7.0.2
+  # MariaDB
+  - org.mariadb.jdbc:mariadb-java-client:3.5.7
+  # MySQL
+  - com.mysql:mysql-connector-j:9.5.0
+  # PostgreSQL
+  - org.postgresql:postgresql:42.7.8
+  # H2
+  - com.h2database:h2:2.4.240
+  # SQLite
+  - org.xerial:sqlite-jdbc:3.51.1.0
+
 
 commands:
   solidity:
