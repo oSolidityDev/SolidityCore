@@ -1,5 +1,7 @@
 # SolidityCore
 
+[![](https://jitpack.io/v/oSolidityDev/SolidityCore.svg)](https://jitpack.io/#oSolidityDev/SolidityCore)
+
 A library made to make plugins easier, used with oSolidity plugins made by AbdullahCXD
 
 ## What features does this include?
