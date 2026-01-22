@@ -16,15 +16,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 @Setter
 @Getter
 public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
     private SolidityPlugin solidityPlugin;
     private BaseCommand parent;
+    private boolean initialized = false;
 
     public BaseCommand() {
-        initialize();
+        // Don't call initialize() here - let CommandManager do it after setSolidityPlugin()
     }
 
     public abstract void initialize();
@@ -269,13 +271,19 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         return suggestions;
     }
 
-    public void setSolidityPlugin(SolidityPlugin solidityPlugin) {
-        this.solidityPlugin = solidityPlugin;
+    /**
+     * Internal method called by CommandManager after initialize() to propagate plugin to subcommands
+     */
+    public void propagatePluginToSubcommands() {
+        if (!initialized) {
+            initialized = true;
 
-        if (getCommandInfo().getSubcommands() != null && !getCommandInfo().getSubcommands().isEmpty()) {
-            for (BaseCommand command : getCommandInfo().getSubcommands()) {
-                command.setParent(this);
-                command.setSolidityPlugin(solidityPlugin);
+            if (getCommandInfo().getSubcommands() != null && !getCommandInfo().getSubcommands().isEmpty()) {
+                for (BaseCommand command : getCommandInfo().getSubcommands()) {
+                    command.setParent(this);
+                    command.setSolidityPlugin(this.solidityPlugin);
+                    command.propagatePluginToSubcommands();
+                }
             }
         }
     }

@@ -30,6 +30,7 @@ public class CommandManager {
     public static void registerCommand(@NotNull SolidityPlugin solidityPlugin, @NotNull BaseCommand command) {
         command.setSolidityPlugin(solidityPlugin);
         command.initialize();
+        command.propagatePluginToSubcommands();
         registerCommand((JavaPlugin) solidityPlugin, command);
     }
 
@@ -83,6 +84,7 @@ public class CommandManager {
             }
 
             command.initialize();
+            command.propagatePluginToSubcommands(); // NEW: Propagate after initialize
 
             // Get CommandMap
             CommandMap map = getCommandMap();
