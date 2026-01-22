@@ -29,6 +29,7 @@ public class CommandManager {
      */
     public static void registerCommand(@NotNull SolidityPlugin solidityPlugin, @NotNull BaseCommand command) {
         command.setSolidityPlugin(solidityPlugin);
+        command.initialize();
         registerCommand((JavaPlugin) solidityPlugin, command);
     }
 
@@ -40,8 +41,6 @@ public class CommandManager {
      * @throws SolidityException if command is null or not found in plugin.yml
      */
     public static void registerCommand(@NotNull JavaPlugin plugin, @NotNull BaseCommand command) {
-
-        command.initialize();
 
         PluginCommand pluginCommand = plugin.getCommand(command.getCommandInfo().getName());
 
@@ -78,6 +77,11 @@ public class CommandManager {
         showNmsWarning(plugin);
 
         try {
+            // Set plugin first if it's a SolidityPlugin
+            if (plugin instanceof SolidityPlugin) {
+                command.setSolidityPlugin((SolidityPlugin) plugin);
+            }
+
             command.initialize();
 
             // Get CommandMap
