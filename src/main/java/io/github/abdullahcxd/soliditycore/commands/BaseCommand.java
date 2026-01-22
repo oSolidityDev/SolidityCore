@@ -16,7 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
 @Setter
 @Getter
 public abstract class BaseCommand implements CommandExecutor, TabCompleter {
@@ -26,12 +25,6 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
     public BaseCommand() {
         initialize();
-        if (getCommandInfo().getSubcommands() != null && !getCommandInfo().getSubcommands().isEmpty()) {
-            for (BaseCommand command : getCommandInfo().getSubcommands()) {
-                command.setSolidityPlugin(solidityPlugin);
-                command.setParent(this);
-            }
-        }
     }
 
     public abstract void initialize();
@@ -53,13 +46,13 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
         // Check if command is player-only
         if (getCommandInfo().isPlayer() && !(sender instanceof Player)) {
-            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>You cannot use this command from console!</red>");
+            SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<red>You cannot use this command from console!</red>");
             return true;
         }
 
         // Check permissions
         if (getCommandInfo().getPermission() != null && !sender.hasPermission(getCommandInfo().getPermission())) {
-            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>You do not have permission to use this command.</red>");
+            SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<red>You do not have permission to use this command.</red>");
             return true;
         }
 
@@ -74,7 +67,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
             BaseCommand subcommand = findSubcommand(subcommandName);
 
             if (subcommand == null) {
-                SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>Unknown subcommand:</red> <gold>" + subcommandName + "</gold>");
+                SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<red>Unknown subcommand:</red> <gold>" + subcommandName + "</gold>");
                 renderHelpMessage(sender);
                 return true;
             }
@@ -90,20 +83,20 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
                 .count();
 
         if (args.length < requiredCount) {
-            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>Not enough arguments!</red>");
+            SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<red>Not enough arguments!</red>");
             String fullCommand = buildFullCommandPath();
-            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<gold>Usage:</gold> /" + fullCommand + " " + buildArguments());
+            SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<gold>Usage:</gold> /" + fullCommand + " " + buildArguments());
             SenderUtils.newline(sender);
-            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red><> <gray>- Required, <green>[] <gray>- Optional</gray></red>");
+            SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<red><> <gray>- Required, <green>[] <gray>- Optional</gray></red>");
 
             // Show argument descriptions if available
             if (commandArgs.stream().anyMatch(a -> a.getDescription() != null)) {
                 SenderUtils.newline(sender);
-                SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<yellow>Arguments:</yellow>");
+                SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<yellow>Arguments:</yellow>");
                 for (CommandInfo.CommandArgument arg : commandArgs) {
                     if (arg.getDescription() != null) {
                         String argDisplay = arg.isRequired() ? "<" + arg.getName() + ">" : "[" + arg.getName() + "]";
-                        SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "  <gold>" + argDisplay + "</gold> <gray>- " + arg.getDescription() + "</gray>");
+                        SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "  <gold>" + argDisplay + "</gold> <gray>- " + arg.getDescription() + "</gray>");
                     }
                 }
             }
@@ -119,7 +112,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
             execute(context);
         } catch (Exception e) {
-            SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red>An error occurred while executing this command.</red>");
+            SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<red>An error occurred while executing this command.</red>");
             e.printStackTrace();
         }
 
@@ -143,9 +136,9 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         String fullCommand = buildFullCommandPath();
         String displayName = fullCommand.substring(0, 1).toUpperCase() + fullCommand.substring(1);
 
-        SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<yellow><bold>" + displayName + " Commands:</bold></yellow>");
+        SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<yellow><bold>" + displayName + " Commands:</bold></yellow>");
         SenderUtils.newline(sender);
-        SenderUtils.sendWithPrefix(sender, solidityPlugin.getSolidityPluginName(), "<red><> <gray>- Required, <green>[] <gray>- Optional</gray></red>");
+        SenderUtils.sendWithPrefix(sender, getSolidityPlugin().getSolidityPluginName(), "<red><> <gray>- Required, <green>[] <gray>- Optional</gray></red>");
         SenderUtils.newline(sender);
 
         if (hasSubcommands()) {
@@ -223,6 +216,17 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         return String.join(" ", path);
     }
 
+    // Helper method to get the SolidityPlugin, checking parent chain if needed
+    private SolidityPlugin getSolidityPlugin() {
+        if (solidityPlugin != null) {
+            return solidityPlugin;
+        }
+        if (parent != null) {
+            return parent.getSolidityPlugin();
+        }
+        throw new IllegalStateException("SolidityPlugin not set on command: " + getCommandInfo().getName());
+    }
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         // Check permissions
@@ -270,6 +274,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
         if (getCommandInfo().getSubcommands() != null && !getCommandInfo().getSubcommands().isEmpty()) {
             for (BaseCommand command : getCommandInfo().getSubcommands()) {
+                command.setParent(this);
                 command.setSolidityPlugin(solidityPlugin);
             }
         }
