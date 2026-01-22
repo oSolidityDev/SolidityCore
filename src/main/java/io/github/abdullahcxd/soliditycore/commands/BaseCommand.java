@@ -23,7 +23,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
     private SolidityPlugin solidityPlugin;
     private BaseCommand parent;
-    private boolean initialized = false;
+    private final List<BaseCommand> registeredSubcommands = new ArrayList<>();
 
     public BaseCommand() {
         // Don't call initialize() here - let CommandManager do it after setSolidityPlugin()
@@ -32,6 +32,58 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
     public abstract void initialize();
     public abstract CommandInfo getCommandInfo();
     public abstract void execute(CommandContext context);
+
+    /**
+     * Registers a subcommand. This should be called in the initialize() method.
+     * The subcommand will automatically inherit the parent's SolidityPlugin.
+     *
+     * @param subcommand The subcommand to register
+     */
+    protected void registerSubcommand(@NotNull BaseCommand subcommand) {
+        subcommand.setParent(this);
+        subcommand.setSolidityPlugin(this.solidityPlugin);
+        subcommand.initialize();
+        this.registeredSubcommands.add(subcommand);
+    }
+
+    /**
+     * Registers multiple subcommands at once.
+     *
+     * @param subcommands The subcommands to register
+     */
+    protected void registerSubcommands(@NotNull BaseCommand... subcommands) {
+        for (BaseCommand subcommand : subcommands) {
+            registerSubcommand(subcommand);
+        }
+    }
+
+    /**
+     * Registers multiple subcommands from a list.
+     *
+     * @param subcommands The list of subcommands to register
+     */
+    protected void registerSubcommands(@NotNull List<BaseCommand> subcommands) {
+        for (BaseCommand subcommand : subcommands) {
+            registerSubcommand(subcommand);
+        }
+    }
+
+    /**
+     * Gets all registered subcommands. This combines subcommands from both
+     * the CommandInfo and those registered via registerSubcommand().
+     *
+     * @return List of all subcommands
+     */
+    private List<BaseCommand> getAllSubcommands() {
+        List<BaseCommand> allSubcommands = new ArrayList<>(registeredSubcommands);
+
+        // Also include subcommands from CommandInfo if any
+        if (getCommandInfo().getSubcommands() != null) {
+            allSubcommands.addAll(getCommandInfo().getSubcommands());
+        }
+
+        return allSubcommands;
+    }
 
     /**
      * Override this method to provide custom tab completion
@@ -122,13 +174,11 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
     }
 
     private boolean hasSubcommands() {
-        return getCommandInfo().getSubcommands() != null && !getCommandInfo().getSubcommands().isEmpty();
+        return !getAllSubcommands().isEmpty();
     }
 
     private @Nullable BaseCommand findSubcommand(String name) {
-        if (!hasSubcommands()) return null;
-
-        return getCommandInfo().getSubcommands().stream()
+        return getAllSubcommands().stream()
                 .filter(sub -> sub.getCommandInfo().getName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
@@ -144,7 +194,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         SenderUtils.newline(sender);
 
         if (hasSubcommands()) {
-            for (BaseCommand sub : getCommandInfo().getSubcommands()) {
+            for (BaseCommand sub : getAllSubcommands()) {
                 CommandInfo info = sub.getCommandInfo();
 
                 // Check permission for subcommand visibility
@@ -240,7 +290,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         if (hasSubcommands()) {
             if (args.length == 1) {
                 String input = args[0].toLowerCase();
-                return getCommandInfo().getSubcommands().stream()
+                return getAllSubcommands().stream()
                         .filter(sub -> sub.getCommandInfo().getPermission() == null ||
                                 sender.hasPermission(sub.getCommandInfo().getPermission()))
                         .map(sub -> sub.getCommandInfo().getName())
@@ -269,22 +319,5 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         }
 
         return suggestions;
-    }
-
-    /**
-     * Internal method called by CommandManager after initialize() to propagate plugin to subcommands
-     */
-    public void propagatePluginToSubcommands() {
-        if (!initialized) {
-            initialized = true;
-
-            if (getCommandInfo().getSubcommands() != null && !getCommandInfo().getSubcommands().isEmpty()) {
-                for (BaseCommand command : getCommandInfo().getSubcommands()) {
-                    command.setParent(this);
-                    command.setSolidityPlugin(this.solidityPlugin);
-                    command.propagatePluginToSubcommands();
-                }
-            }
-        }
     }
 }
