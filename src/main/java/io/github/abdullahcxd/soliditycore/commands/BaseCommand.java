@@ -28,6 +28,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         initialize();
         if (getCommandInfo().getSubcommands() != null && !getCommandInfo().getSubcommands().isEmpty()) {
             for (BaseCommand command : getCommandInfo().getSubcommands()) {
+                command.setSolidityPlugin(solidityPlugin);
                 command.setParent(this);
             }
         }
@@ -262,5 +263,15 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         }
 
         return suggestions;
+    }
+
+    public void setSolidityPlugin(SolidityPlugin solidityPlugin) {
+        this.solidityPlugin = solidityPlugin;
+
+        if (getCommandInfo().getSubcommands() != null && !getCommandInfo().getSubcommands().isEmpty()) {
+            for (BaseCommand command : getCommandInfo().getSubcommands()) {
+                command.setSolidityPlugin(solidityPlugin);
+            }
+        }
     }
 }
