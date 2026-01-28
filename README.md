@@ -36,15 +36,10 @@ For this library, it'll only work on 1.21+ for now.
 ## Development
 
 Here is the repository and dependency of the library, for more information follow the wiki instead:
-
-**Note: SolidityCore repository has been moved to OasisMC's repository**
-
-This means any newer versions should be released on the OasisMC repository, older versions are still available on the JitPack repository.
-
 ```xml
 <repository>
-    <id>OasisMC</id>
-    <url>https://repository.oasisuk.xyz/releases</url>
+    <id>JitPack</id>
+    <url>https://jitpack.io</url>
 </repository>
 ```
 
@@ -52,7 +47,6 @@ This means any newer versions should be released on the OasisMC repository, olde
 <dependency>
     <groupId>com.github.oSolidityDev</groupId>
     <artifactId>SolidityCore</artifactId>
-    <!-- 0.0.8 or newer should use OasisMC repository, older should use JitPack.io -->
     <version>{VERSION}</version> 
     <scope>provided</scope>
 </dependency>
