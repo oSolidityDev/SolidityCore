@@ -18,7 +18,8 @@ Features the library includes:
  - Exception: SolidityException
  - Listener: SolidityListener
  - Screen: InventoryManager, InventoryScreen, PaginatedInventoryScreen
- - Storage (For Screens): Storage, StorageManager, PlayerTemporaryStorage
+ - Storage: StorageManager, StorageProvider, AbstractStorageProvider, StorageType, Providers: JSONStorageProvider, YAMLStorageProvider
+ - Temporary Storage (For Screens): Storage, StorageManager, PlayerTemporaryStorage
  - Task: TaskChain
  - Discord: WebhookPayload, WebhookEmbed, Thumbnail, Image, Footer, Field, DiscordWebhook, Author
  - Prefix: PrefixManager
