@@ -20,7 +20,7 @@ public class SolidityCoreMenu extends InventoryScreen {
     }
 
     @Override
-    public void initialize() {
+    public void initialize(Player target) {
         ItemStack glassPane = ItemBuilder.of(Material.LIGHT_GRAY_STAINED_GLASS_PANE)
                 .name(MessageBuilder.fromMiniMessage(" ").build()) // empty name
                 .build();

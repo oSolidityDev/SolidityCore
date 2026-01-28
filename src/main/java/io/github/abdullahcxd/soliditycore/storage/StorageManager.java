@@ -1,339 +1,279 @@
 package io.github.abdullahcxd.soliditycore.storage;
 
-import org.bukkit.entity.Player;
+import io.github.abdullahcxd.soliditycore.SolidityPlugin;
+import io.github.abdullahcxd.soliditycore.utils.SenderUtils;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java.util.logging.Level;
 
 /**
- * Centralized manager for player-specific temporary storage.
- * Thread-safe and optimized for concurrent access.
+ * Manages storage providers for a Solidity plugin.
+ * Handles initialization, lifecycle management, and provider retrieval.
  */
+@Getter
 public class StorageManager {
 
-    private static final Map<UUID, PlayerStorage> PLAYER_STORAGES = new ConcurrentHashMap<>();
+    private final SolidityPlugin plugin;
+    private final StorageType storageType;
+    private final Map<String, StorageProvider> providerMap;
+    /**
+     * -- GETTER --
+     *  Checks if the storage manager has been initialized.
+     *
+     */
+    private volatile boolean initialized = false;
+    /**
+     * -- GETTER --
+     *  Checks if the storage manager has been started.
+     *
+     */
+    private volatile boolean started = false;
 
     /**
-     * Gets or creates a player's storage.
+     * Creates a new StorageManager instance.
      *
-     * @param player the player
-     * @return the player's storage
+     * @param plugin      The plugin instance
+     * @param storageType The type of storage to use
+     * @throws IllegalArgumentException if plugin or storageType is null
      */
-    public static @NotNull PlayerStorage getOrCreate(@NotNull Player player) {
-        return getOrCreate(player.getUniqueId());
+    public StorageManager(@NotNull SolidityPlugin plugin, @NotNull StorageType storageType) {
+        this.plugin = plugin;
+        this.storageType = storageType;
+        this.providerMap = new ConcurrentHashMap<>();
     }
 
     /**
-     * Gets or creates storage by UUID.
+     * Registers a storage provider.
      *
-     * @param playerId the player UUID
-     * @return the player's storage
+     * @param provider The provider to register
+     * @throws IllegalArgumentException if provider is null or provider name is null/empty
+     * @throws IllegalStateException    if a provider with the same name is already registered
      */
-    public static @NotNull PlayerStorage getOrCreate(@NotNull UUID playerId) {
-        return PLAYER_STORAGES.computeIfAbsent(playerId, PlayerStorage::new);
-    }
-
-    /**
-     * Gets existing storage (returns null if doesn't exist).
-     *
-     * @param player the player
-     * @return the storage or null
-     */
-    public static @Nullable PlayerStorage get(@NotNull Player player) {
-        return get(player.getUniqueId());
-    }
-
-    /**
-     * Gets existing storage by UUID.
-     *
-     * @param playerId the player UUID
-     * @return the storage or null
-     */
-    public static @Nullable PlayerStorage get(@NotNull UUID playerId) {
-        return PLAYER_STORAGES.get(playerId);
-    }
-
-    /**
-     * Gets storage as Optional.
-     *
-     * @param player the player
-     * @return Optional containing storage if present
-     */
-    public static @NotNull Optional<PlayerStorage> getOptional(@NotNull Player player) {
-        return Optional.ofNullable(get(player));
-    }
-
-    /**
-     * Gets storage as Optional by UUID.
-     *
-     * @param playerId the player UUID
-     * @return Optional containing storage if present
-     */
-    public static @NotNull Optional<PlayerStorage> getOptional(@NotNull UUID playerId) {
-        return Optional.ofNullable(get(playerId));
-    }
-
-    /**
-     * Checks if storage exists for player.
-     *
-     * @param player the player
-     * @return true if storage exists
-     */
-    public static boolean has(@NotNull Player player) {
-        return has(player.getUniqueId());
-    }
-
-    /**
-     * Checks if storage exists for UUID.
-     *
-     * @param playerId the player UUID
-     * @return true if storage exists
-     */
-    public static boolean has(@NotNull UUID playerId) {
-        return PLAYER_STORAGES.containsKey(playerId);
-    }
-
-    /**
-     * Executes an action with the player's storage if it exists.
-     *
-     * @param player the player
-     * @param action the action to perform
-     */
-    public static void ifPresent(@NotNull Player player, @NotNull Consumer<PlayerStorage> action) {
-        ifPresent(player.getUniqueId(), action);
-    }
-
-    /**
-     * Executes an action with the storage if it exists.
-     *
-     * @param playerId the player UUID
-     * @param action   the action to perform
-     */
-    public static void ifPresent(@NotNull UUID playerId, @NotNull Consumer<PlayerStorage> action) {
-        PlayerStorage storage = PLAYER_STORAGES.get(playerId);
-        if (storage != null) {
-            action.accept(storage);
+    public void registerProvider(@NotNull StorageProvider provider) {
+        if (provider.getProviderName() == null || provider.getProviderName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Provider name cannot be null or empty");
         }
+
+        String providerName = provider.getProviderName();
+
+        if (providerMap.containsKey(providerName)) {
+            throw new IllegalStateException("Provider with name '" + providerName + "' is already registered");
+        }
+
+        providerMap.put(providerName, provider);
+        plugin.getLogger().info("Registered storage provider: " + providerName);
     }
 
     /**
-     * Removes player's storage and clears its data.
+     * Unregisters a storage provider by name.
      *
-     * @param player the player
-     * @return true if storage was removed
+     * @param providerName The name of the provider to unregister
+     * @return true if the provider was removed, false if it wasn't found
      */
-    public static boolean remove(@NotNull Player player) {
-        return remove(player.getUniqueId());
-    }
-
-    /**
-     * Removes storage by UUID and clears its data.
-     *
-     * @param playerId the player UUID
-     * @return true if storage was removed
-     */
-    public static boolean remove(@NotNull UUID playerId) {
-        PlayerStorage storage = PLAYER_STORAGES.remove(playerId);
-        if (storage != null) {
-            storage.clear();
+    public boolean unregisterProvider(@NotNull String providerName) {
+        StorageProvider removed = providerMap.remove(providerName);
+        if (removed != null) {
+            plugin.getLogger().info("Unregistered storage provider: " + providerName);
             return true;
         }
         return false;
     }
 
     /**
-     * Clears all storages and removes them.
+     * Initializes all registered providers that match the configured storage type.
+     * Should be called during plugin load phase.
      */
-    public static void clearAll() {
-        PLAYER_STORAGES.values().forEach(PlayerStorage::clear);
-        PLAYER_STORAGES.clear();
-    }
+    public void loadProviders() {
+        if (initialized) {
+            plugin.getLogger().warning("Storage providers already initialized");
+            return;
+        }
 
-    /**
-     * Clears data in all storages without removing them.
-     */
-    public static void clearAllData() {
-        PLAYER_STORAGES.values().forEach(PlayerStorage::clear);
-    }
+        plugin.getLogger().info("Initializing storage providers for type: " + storageType);
 
-    /**
-     * Gets the number of active storages.
-     *
-     * @return the count
-     */
-    public static int size() {
-        return PLAYER_STORAGES.size();
-    }
+        int initializedCount = 0;
+        int failedCount = 0;
 
-    /**
-     * Checks if there are no active storages.
-     *
-     * @return true if empty
-     */
-    public static boolean isEmpty() {
-        return PLAYER_STORAGES.isEmpty();
-    }
+        for (StorageProvider provider : providerMap.values()) {
+            if (!provider.getProviderType().equals(storageType)) {
+                continue;
+            }
 
-    /**
-     * Gets all player UUIDs with active storage.
-     *
-     * @return unmodifiable set of UUIDs
-     */
-    public static @NotNull Set<UUID> getActivePlayers() {
-        return Collections.unmodifiableSet(PLAYER_STORAGES.keySet());
-    }
-
-    /**
-     * Gets all active storages.
-     *
-     * @return unmodifiable collection of storages
-     */
-    public static @NotNull Collection<PlayerStorage> getAllStorages() {
-        return Collections.unmodifiableCollection(PLAYER_STORAGES.values());
-    }
-
-    /**
-     * Removes storages that are empty (have no data).
-     *
-     * @return number of storages removed
-     */
-    public static int cleanupEmpty() {
-        int removed = 0;
-        Iterator<Map.Entry<UUID, PlayerStorage>> iterator = PLAYER_STORAGES.entrySet().iterator();
-
-        while (iterator.hasNext()) {
-            Map.Entry<UUID, PlayerStorage> entry = iterator.next();
-            if (entry.getValue().isEmpty()) {
-                iterator.remove();
-                removed++;
+            try {
+                provider.initialize(plugin.getConfig());
+                initializedCount++;
+                plugin.getLogger().info("Initialized provider: " + provider.getProviderName());
+            } catch (Exception e) {
+                failedCount++;
+                plugin.getLogger().log(Level.SEVERE,
+                        "Failed to initialize provider: " + provider.getProviderName(), e);
+                SenderUtils.error(plugin.getConsoleCommandSender(),
+                        "Failed to initialize storage provider: " + provider.getProviderName() +
+                                " - " + e.getMessage());
             }
         }
 
-        return removed;
+        initialized = true;
+        plugin.getLogger().info(String.format(
+                "Storage initialization complete: %d succeeded, %d failed",
+                initializedCount, failedCount));
     }
 
     /**
-     * Quick set - gets or creates storage and sets a value.
-     *
-     * @param player the player
-     * @param key    the key
-     * @param value  the value
+     * Starts all initialized providers that match the configured storage type.
+     * Should be called during plugin enable phase.
      */
-    public static void set(@NotNull Player player, @NotNull String key, @NotNull Object value) {
-        getOrCreate(player).set(key, value);
+    public void enableProviders() {
+        if (!initialized) {
+            plugin.getLogger().warning("Cannot enable providers before initialization");
+            return;
+        }
+
+        if (started) {
+            plugin.getLogger().warning("Storage providers already started");
+            return;
+        }
+
+        plugin.getLogger().info("Starting storage providers");
+
+        int startedCount = 0;
+        int failedCount = 0;
+
+        for (StorageProvider provider : providerMap.values()) {
+            if (!provider.getProviderType().equals(storageType)) {
+                continue;
+            }
+
+            try {
+                provider.start();
+                startedCount++;
+                plugin.getLogger().info("Started provider: " + provider.getProviderName());
+            } catch (Exception e) {
+                failedCount++;
+                plugin.getLogger().log(Level.SEVERE,
+                        "Failed to start provider: " + provider.getProviderName(), e);
+                SenderUtils.error(plugin.getConsoleCommandSender(),
+                        "Failed to start storage provider: " + provider.getProviderName() +
+                                " - " + e.getMessage());
+            }
+        }
+
+        started = true;
+        plugin.getLogger().info(String.format(
+                "Storage startup complete: %d succeeded, %d failed",
+                startedCount, failedCount));
     }
 
     /**
-     * Quick set by UUID.
-     *
-     * @param playerId the player UUID
-     * @param key      the key
-     * @param value    the value
+     * Closes all active providers that match the configured storage type.
+     * Should be called during plugin disable phase.
      */
-    public static void set(@NotNull UUID playerId, @NotNull String key, @NotNull Object value) {
-        getOrCreate(playerId).set(key, value);
+    public void closeProviders() {
+        plugin.getLogger().info("Closing storage providers");
+
+        int closedCount = 0;
+        int failedCount = 0;
+
+        for (StorageProvider provider : providerMap.values()) {
+            if (!provider.getProviderType().equals(storageType)) {
+                continue;
+            }
+
+            try {
+                provider.close();
+                closedCount++;
+                plugin.getLogger().info("Closed provider: " + provider.getProviderName());
+            } catch (Exception e) {
+                failedCount++;
+                plugin.getLogger().log(Level.SEVERE,
+                        "Failed to close provider: " + provider.getProviderName(), e);
+            }
+        }
+
+        started = false;
+        initialized = false;
+
+        plugin.getLogger().info(String.format(
+                "Storage shutdown complete: %d succeeded, %d failed",
+                closedCount, failedCount));
     }
 
     /**
-     * Quick get - returns null if storage or key doesn't exist.
+     * Retrieves a provider by its class type.
      *
-     * @param player the player
-     * @param key    the key
-     * @return the value or null
+     * @param providerClass The class of the provider to retrieve
+     * @param <T>           The provider type
+     * @return The provider instance, or null if not found
      */
-    public static @Nullable Object getValue(@NotNull Player player, @NotNull String key) {
-        PlayerStorage storage = get(player);
-        return storage != null ? storage.get(key) : null;
+    @Nullable
+    public <T extends StorageProvider> T getProviderByType(@NotNull Class<T> providerClass) {
+
+        return providerMap.values().stream()
+                .filter(providerClass::isInstance)
+                .map(providerClass::cast)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
-     * Quick get by UUID.
+     * Retrieves a provider by its name.
      *
-     * @param playerId the player UUID
-     * @param key      the key
-     * @return the value or null
+     * @param providerName The name of the provider
+     * @return The provider instance, or null if not found
      */
-    public static @Nullable Object getValue(@NotNull UUID playerId, @NotNull String key) {
-        PlayerStorage storage = get(playerId);
-        return storage != null ? storage.get(key) : null;
+    @Nullable
+    public StorageProvider getProviderByName(@NotNull String providerName) {
+        if (providerName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Provider name cannot be null or empty");
+        }
+        return providerMap.get(providerName);
     }
 
     /**
-     * Quick typed get.
+     * Gets an unmodifiable collection of all registered providers.
      *
-     * @param player the player
-     * @param key    the key
-     * @param type   the expected type
-     * @param <T>    the type parameter
-     * @return the value or null
+     * @return Collection of all providers
      */
-    public static <T> @Nullable T getTyped(@NotNull Player player, @NotNull String key, @NotNull Class<T> type) {
-        PlayerStorage storage = get(player);
-        return storage != null ? storage.getTyped(key, type) : null;
+    @NotNull
+    public Collection<StorageProvider> getAllProviders() {
+        return Collections.unmodifiableCollection(providerMap.values());
     }
 
     /**
-     * Quick typed get by UUID.
+     * Gets an unmodifiable collection of providers matching the configured storage type.
      *
-     * @param playerId the player UUID
-     * @param key      the key
-     * @param type     the expected type
-     * @param <T>      the type parameter
-     * @return the value or null
+     * @return Collection of active providers
      */
-    public static <T> @Nullable T getTyped(@NotNull UUID playerId, @NotNull String key, @NotNull Class<T> type) {
-        PlayerStorage storage = get(playerId);
-        return storage != null ? storage.getTyped(key, type) : null;
+    @NotNull
+    public Collection<StorageProvider> getActiveProviders() {
+        return providerMap.values().stream()
+                .filter(provider -> provider.getProviderType().equals(storageType))
+                .toList();
     }
 
     /**
-     * Quick remove.
+     * Checks if any providers are registered.
      *
-     * @param player the player
-     * @param key    the key
-     * @return the removed value or null
+     * @return true if at least one provider is registered
      */
-    public static @Nullable Object removeValue(@NotNull Player player, @NotNull String key) {
-        PlayerStorage storage = get(player);
-        return storage != null ? storage.remove(key) : null;
+    public boolean hasProviders() {
+        return !providerMap.isEmpty();
     }
 
     /**
-     * Quick remove by UUID.
+     * Checks if any providers matching the storage type are registered.
      *
-     * @param playerId the player UUID
-     * @param key      the key
-     * @return the removed value or null
+     * @return true if at least one matching provider is registered
      */
-    public static @Nullable Object removeValue(@NotNull UUID playerId, @NotNull String key) {
-        PlayerStorage storage = get(playerId);
-        return storage != null ? storage.remove(key) : null;
+    public boolean hasActiveProviders() {
+        return providerMap.values().stream()
+                .anyMatch(provider -> provider.getProviderType().equals(storageType));
     }
 
-    /**
-     * Quick has checked.
-     *
-     * @param player the player
-     * @param key    the key
-     * @return true if the key exists in the player's storage
-     */
-    public static boolean hasValue(@NotNull Player player, @NotNull String key) {
-        PlayerStorage storage = get(player);
-        return storage != null && storage.has(key);
-    }
-
-    /**
-     * Quick has check by UUID.
-     *
-     * @param playerId the player UUID
-     * @param key      the key
-     * @return true if the key exists in the storage
-     */
-    public static boolean hasValue(@NotNull UUID playerId, @NotNull String key) {
-        PlayerStorage storage = get(playerId);
-        return storage != null && storage.has(key);
-    }
 }

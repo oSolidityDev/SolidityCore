@@ -1,4 +1,4 @@
-package io.github.abdullahcxd.soliditycore.storage;
+package io.github.abdullahcxd.soliditycore.temporary.storage;
 
 import lombok.Getter;
 import org.bukkit.entity.Player;
@@ -11,16 +11,16 @@ import java.util.UUID;
  * Provides player-contextual methods and uses String keys.
  */
 @Getter
-public class PlayerStorage extends TypedStorage<String> {
+public class TemporaryPlayerStorage extends TemporaryTypedStorage<String> {
 
     private final UUID playerId;
 
-    public PlayerStorage(@NotNull UUID playerId) {
+    public TemporaryPlayerStorage(@NotNull UUID playerId) {
         super();
         this.playerId = playerId;
     }
 
-    public PlayerStorage(@NotNull Player player) {
+    public TemporaryPlayerStorage(@NotNull Player player) {
         this(player.getUniqueId());
     }
 

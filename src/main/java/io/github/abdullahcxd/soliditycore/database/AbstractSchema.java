@@ -18,6 +18,7 @@ import java.util.List;
  */
 @Getter
 @RequiredArgsConstructor
+@Deprecated(since = "0.0.9")
 public abstract class AbstractSchema implements Schema {
 
     private final String name;

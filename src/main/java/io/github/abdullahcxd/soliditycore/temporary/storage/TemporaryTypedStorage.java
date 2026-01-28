@@ -1,4 +1,4 @@
-package io.github.abdullahcxd.soliditycore.storage;
+package io.github.abdullahcxd.soliditycore.temporary.storage;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,20 +13,20 @@ import java.util.function.Supplier;
  *
  * @param <K> the key type
  */
-public class TypedStorage<K> implements Storage<K, Object> {
+public class TemporaryTypedStorage<K> implements TemporaryStorage<K, Object> {
 
     private final Map<K, Object> data;
 
-    public TypedStorage() {
+    public TemporaryTypedStorage() {
         this(new ConcurrentHashMap<>());
     }
 
-    public TypedStorage(@NotNull Map<K, Object> backingMap) {
+    public TemporaryTypedStorage(@NotNull Map<K, Object> backingMap) {
         this.data = backingMap;
     }
 
     @Override
-    public @NotNull Storage<K, Object> set(@NotNull K key, @Nullable Object value) {
+    public @NotNull TemporaryStorage<K, Object> set(@NotNull K key, @Nullable Object value) {
         Objects.requireNonNull(key, "Key cannot be null");
         if (value == null) {
             data.remove(key);
@@ -102,7 +102,7 @@ public class TypedStorage<K> implements Storage<K, Object> {
     }
 
     @Override
-    public @NotNull Storage<K, Object> putAll(@NotNull Map<K, Object> newData) {
+    public @NotNull TemporaryStorage<K, Object> putAll(@NotNull Map<K, Object> newData) {
         Objects.requireNonNull(newData, "Data cannot be null");
         data.putAll(newData);
         return this;

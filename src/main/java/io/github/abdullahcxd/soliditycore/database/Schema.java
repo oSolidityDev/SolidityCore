@@ -10,6 +10,7 @@ import java.sql.SQLException;
  * <p>Schemas are used to organize and manage database table structures.
  * They support versioning for migrations and updates.
  */
+@Deprecated(since = "0.0.9")
 public interface Schema {
 
     /**

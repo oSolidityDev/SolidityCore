@@ -1,4 +1,4 @@
-package io.github.abdullahcxd.soliditycore.storage;
+package io.github.abdullahcxd.soliditycore.temporary.storage;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -7,12 +7,12 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <T> the value type associated with this key
  */
-public class StorageKey<T> {
+public class TemporaryStorageKey<T> {
 
     private final String key;
     private final Class<T> type;
 
-    private StorageKey(@NotNull String key, @NotNull Class<T> type) {
+    private TemporaryStorageKey(@NotNull String key, @NotNull Class<T> type) {
         this.key = key;
         this.type = type;
     }
@@ -25,8 +25,8 @@ public class StorageKey<T> {
      * @param <T>  the type parameter
      * @return a new StorageKey
      */
-    public static <T> @NotNull StorageKey<T> of(@NotNull String key, @NotNull Class<T> type) {
-        return new StorageKey<>(key, type);
+    public static <T> @NotNull TemporaryStorageKey<T> of(@NotNull String key, @NotNull Class<T> type) {
+        return new TemporaryStorageKey<>(key, type);
     }
 
     /**
@@ -38,8 +38,8 @@ public class StorageKey<T> {
      * @param <T>       the type parameter
      * @return a new namespaced StorageKey
      */
-    public static <T> @NotNull StorageKey<T> namespaced(@NotNull String namespace, @NotNull String key, @NotNull Class<T> type) {
-        return new StorageKey<>(namespace + ":" + key, type);
+    public static <T> @NotNull TemporaryStorageKey<T> namespaced(@NotNull String namespace, @NotNull String key, @NotNull Class<T> type) {
+        return new TemporaryStorageKey<>(namespace + ":" + key, type);
     }
 
     /**
@@ -59,35 +59,35 @@ public class StorageKey<T> {
     /**
      * Gets a value from storage using this typed key.
      */
-    public T get(@NotNull TypedStorage<String> storage) {
+    public T get(@NotNull TemporaryTypedStorage<String> storage) {
         return storage.getTyped(key, type);
     }
 
     /**
      * Gets a value with a default using this typed key.
      */
-    public T get(@NotNull TypedStorage<String> storage, @NotNull T defaultValue) {
+    public T get(@NotNull TemporaryTypedStorage<String> storage, @NotNull T defaultValue) {
         return storage.getTyped(key, type, defaultValue);
     }
 
     /**
      * Sets a value in storage using this typed key.
      */
-    public void set(@NotNull TypedStorage<String> storage, @NotNull T value) {
+    public void set(@NotNull TemporaryTypedStorage<String> storage, @NotNull T value) {
         storage.set(key, value);
     }
 
     /**
      * Removes a value from storage using this typed key.
      */
-    public T remove(@NotNull TypedStorage<String> storage) {
+    public T remove(@NotNull TemporaryTypedStorage<String> storage) {
         return storage.getTyped(key, type);
     }
 
     /**
      * Checks if this key exists in storage.
      */
-    public boolean exists(@NotNull TypedStorage<String> storage) {
+    public boolean exists(@NotNull TemporaryTypedStorage<String> storage) {
         return storage.has(key);
     }
 
@@ -100,7 +100,7 @@ public class StorageKey<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StorageKey<?> that = (StorageKey<?>) o;
+        TemporaryStorageKey<?> that = (TemporaryStorageKey<?>) o;
         return key.equals(that.key) && type.equals(that.type);
     }
 
@@ -110,23 +110,23 @@ public class StorageKey<T> {
     }
 
 
-    public static @NotNull StorageKey<String> string(@NotNull String key) {
+    public static @NotNull TemporaryStorageKey<String> string(@NotNull String key) {
         return of(key, String.class);
     }
 
-    public static @NotNull StorageKey<Integer> integer(@NotNull String key) {
+    public static @NotNull TemporaryStorageKey<Integer> integer(@NotNull String key) {
         return of(key, Integer.class);
     }
 
-    public static @NotNull StorageKey<Long> longKey(@NotNull String key) {
+    public static @NotNull TemporaryStorageKey<Long> longKey(@NotNull String key) {
         return of(key, Long.class);
     }
 
-    public static @NotNull StorageKey<Double> doubleKey(@NotNull String key) {
+    public static @NotNull TemporaryStorageKey<Double> doubleKey(@NotNull String key) {
         return of(key, Double.class);
     }
 
-    public static @NotNull StorageKey<Boolean> bool(@NotNull String key) {
+    public static @NotNull TemporaryStorageKey<Boolean> bool(@NotNull String key) {
         return of(key, Boolean.class);
     }
 }

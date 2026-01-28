@@ -40,12 +40,10 @@ public class ConfirmationScreen extends InventoryScreen {
         
         // Create question item
         this.questionItem = new ItemStack(Material.PAPER);
-        
-        initialize();
     }
 
     @Override
-    public void initialize() {
+    public void initialize(Player target) {
         // Fill background with black glass
         ItemStack background = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         for (int i = 0; i < getInventory().getSize(); i++) {

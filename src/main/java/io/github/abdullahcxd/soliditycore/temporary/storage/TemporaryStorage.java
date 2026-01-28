@@ -1,4 +1,4 @@
-package io.github.abdullahcxd.soliditycore.storage;
+package io.github.abdullahcxd.soliditycore.temporary.storage;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  * @param <K> the key type
  * @param <V> the value type
  */
-public interface Storage<K, V> {
+public interface TemporaryStorage<K, V> {
 
     /**
      * Stores a value with the specified key.
@@ -24,7 +24,7 @@ public interface Storage<K, V> {
      * @param value the value to store
      * @return this storage instance for chaining
      */
-    @NotNull Storage<K, V> set(@NotNull K key, @Nullable V value);
+    @NotNull TemporaryStorage<K, V> set(@NotNull K key, @Nullable V value);
 
     /**
      * Retrieves a value by key.
@@ -126,5 +126,5 @@ public interface Storage<K, V> {
      * @param data the data to store
      * @return this storage instance for chaining
      */
-    @NotNull Storage<K, V> putAll(@NotNull Map<K, V> data);
+    @NotNull TemporaryStorage<K, V> putAll(@NotNull Map<K, V> data);
 }

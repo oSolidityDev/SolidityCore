@@ -1,9 +1,9 @@
 package io.github.abdullahcxd.soliditycore.screen;
 
 import io.github.abdullahcxd.soliditycore.editor.SolidityEditor;
-import io.github.abdullahcxd.soliditycore.storage.PlayerStorage;
-import io.github.abdullahcxd.soliditycore.storage.StorageManager;
 import io.github.abdullahcxd.soliditycore.builders.MessageBuilder;
+import io.github.abdullahcxd.soliditycore.temporary.storage.TemporaryPlayerStorage;
+import io.github.abdullahcxd.soliditycore.temporary.storage.TemporaryStorageManager;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -32,7 +32,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
     private final String title;
     private final int rows;
     private final Map<Integer, ClickableItem> itemMap = new HashMap<>();
-    private final Map<UUID, PlayerStorage> viewerStorages = new HashMap<>();
+    private final Map<UUID, TemporaryPlayerStorage> viewerStorages = new HashMap<>();
 
     private boolean registered = false;
 
@@ -52,7 +52,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
     /**
      * Initialize the GUI - set up items, etc.
      */
-    public abstract void initialize();
+    public abstract void initialize(Player target);
 
     /**
      * Called when the inventory is closed
@@ -157,7 +157,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
             registered = true;
         }
 
-        PlayerStorage storage = StorageManager.getOrCreate(player);
+        TemporaryPlayerStorage storage = TemporaryStorageManager.getOrCreate(player);
         viewerStorages.put(player.getUniqueId(), storage);
 
         player.openInventory(inventory);
@@ -188,7 +188,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
     /**
      * Get storage for a specific viewer
      */
-    public PlayerStorage getStorage(@NotNull Player player) {
+    public TemporaryPlayerStorage getStorage(@NotNull Player player) {
         return viewerStorages.get(player.getUniqueId());
     }
 
@@ -235,7 +235,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
     }
 
     @EventHandler
-    public void onItemDrag(InventoryDragEvent event) {
+    public void onItemDrag(@NotNull InventoryDragEvent event) {
         if (!(event.getInventory().getHolder() instanceof InventoryScreen)) return;
         if (!event.getInventory().equals(this.inventory)) return;
 
@@ -243,7 +243,7 @@ public abstract class InventoryScreen implements InventoryHolder, Listener {
     }
 
     @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
+    public void onInventoryClose(@NotNull InventoryCloseEvent event) {
         if (!(event.getInventory().getHolder() instanceof InventoryScreen)) return;
         if (!event.getInventory().equals(this.inventory)) return;
         if (!(event.getPlayer() instanceof Player player)) return;

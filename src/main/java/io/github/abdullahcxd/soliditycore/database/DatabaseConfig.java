@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@Deprecated(since = "0.0.9")
 public class DatabaseConfig {
 
     @Builder.Default

@@ -1,6 +1,5 @@
 package io.github.abdullahcxd.soliditycore.database;
 
-import io.github.abdullahcxd.soliditycore.database.DatabaseType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +26,7 @@ import java.util.stream.Collectors;
  *     .build(DatabaseType.MYSQL);
  * }</pre>
  */
+@Deprecated(since = "0.0.9")
 public class TableBuilder {
 
     private final String tableName;

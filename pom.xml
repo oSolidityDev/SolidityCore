@@ -6,7 +6,7 @@
 
     <groupId>io.github.abdullahcxd</groupId>
     <artifactId>soliditycore</artifactId>
-    <version>0.0.8</version>
+    <version>0.0.9</version>
     <packaging>jar</packaging>
 
     <name>soliditycore</name>
@@ -130,6 +130,11 @@
             <scope>provided</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20250517</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -17,6 +17,8 @@ libraries:
   - com.h2database:h2:2.4.240
   # SQLite
   - org.xerial:sqlite-jdbc:3.51.1.0
+  # JSON
+  - org.json:json:20250517
 
 
 commands:

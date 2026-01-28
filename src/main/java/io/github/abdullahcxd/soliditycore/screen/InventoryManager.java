@@ -8,7 +8,7 @@ public class InventoryManager {
 
     public static void open(Player player, @NotNull InventoryScreen screen) {
 
-        screen.initialize();
+        screen.initialize(player);
         screen.open(player);
 
     }

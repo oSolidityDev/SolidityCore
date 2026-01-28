@@ -2,6 +2,7 @@ package io.github.abdullahcxd.soliditycore.database;
 
 import lombok.Getter;
 
+@Deprecated(since = "0.0.9")
 public enum DatabaseType {
     MYSQL("mysql"),
     MARIADB("mariadb"),

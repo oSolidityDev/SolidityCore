@@ -22,7 +22,14 @@ import java.util.logging.Logger;
 
 /**
  * Enhanced database manager with connection pooling, async operations, and schema management.
+ * <p>
+ * Deprecated and replaced with Storage providers, storage providers are better use instead of
+ * the DatabaseManager, since they are powerful and doesn't need schema based databasing
+ * which isn't good when trying to create tables for different databases, etc.
+ * <p>
+ * Use {@link io.github.abdullahcxd.soliditycore.storage.StorageManager} and {@link io.github.abdullahcxd.soliditycore.storage.StorageProvider}
  */
+@Deprecated(since = "0.0.9")
 public class DatabaseManager {
 
     @Getter
